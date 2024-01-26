@@ -1,6 +1,7 @@
 #include "chappal.h"
 #include <raylib.h>
 #include <raymath.h>
+#include <rlgl.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -40,21 +41,22 @@ Chappal* CreateChappal(Texture2D texture, Vector2 target) {
 }
 
 void UpdateChappal(Chappal* chappal) {
-	printf("x: %f; y: %f; chappala speed: %f\n", chappal->position.x, chappal->position.y, speed);
-	printf("Direction = {%f, %f}\n", chappal->direction.x, chappal->direction.y);
 	Vector2 velocity = Vector2Scale(chappal->direction, speed);
 	chappal->position = Vector2Add(chappal->position, velocity);
 	chappal->rotation += chappal->rotationSpeed;
 };
 
 void DrawChappal(Chappal* chappal) {
-	DrawTextureEx(
+	DrawTexturePro(
 		chappal->texture,
-		(Vector2){
-			(chappal->position.x - chappal->texture.width / 2),
-			(chappal->position.y - chappal->texture.height / 2)},
+		(Rectangle){0.0f, 0.0f, (float)chappal->texture.width, (float)chappal->texture.height},
+		(Rectangle){
+			(chappal->position.x),
+			(chappal->position.y),
+			(float)chappal->texture.width,
+			(float)chappal->texture.height},
+		(Vector2){(float)chappal->texture.width / 2, (float)chappal->texture.height / 2},
 		chappal->rotation,
-		1.0f,
 		WHITE);
 };
 

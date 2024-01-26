@@ -178,6 +178,7 @@ void DrawGameScreen(void) {
 	}
 
 	// Testing
+	DrawRectangle(-5, -5, 10, 10, RED);
 	DrawChappal(chappal);
 	// End Testing
 
