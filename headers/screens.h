@@ -1,7 +1,10 @@
 #ifndef SCREENS_H
 #define SCREENS_H
 
-typedef enum GameScreen { TITLE = 0, GAMEPLAY } GameScreen;
+typedef enum GameScreen {
+	TITLE = 0,
+	GAMEPLAY
+} GameScreen;
 
 extern GameScreen currentScreen;
 
