@@ -8,18 +8,20 @@ GameScreen currentScreen = TITLE;
 void UpdateDrawFrame(void);
 Vector2 GetCenterTileLocation();
 
-int main() {
-	InitWindow(1280, 720, "Test Game");
+int main()
+{
+  InitWindow(1280, 720, "Test Game");
 
 	// InitTitleScreen();
 	InitGameScreen();
 
-	SetTargetFPS(60);
-	while (!WindowShouldClose()) {
-		UpdateDrawFrame();
-	}
+  SetTargetFPS(60);
+  while (!WindowShouldClose()) {
+    UpdateDrawFrame();
+  }
 
-  switch (currentScreen) {
+  switch (currentScreen)
+  {
   case GAMEPLAY:
     UnloadGameScreen();
     break;
@@ -34,9 +36,11 @@ int main() {
 	return 0;
 }
 
-void UpdateDrawFrame(void) {
+void UpdateDrawFrame(void)
+{
 
-  switch (currentScreen) {
+  switch (currentScreen)
+  {
   case GAMEPLAY:
     UpdateGameScreen();
     break;
@@ -49,7 +53,8 @@ void UpdateDrawFrame(void) {
 
 	BeginDrawing();
 
-  switch (currentScreen) {
+  switch (currentScreen)
+  {
   case GAMEPLAY:
     DrawGameScreen();
     break;
