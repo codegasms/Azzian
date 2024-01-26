@@ -17,10 +17,15 @@ static int height;
 
 static int finishScreen = 0;
 
-bool face_right = false;
-bool face_left = false;
-bool face_top = false;
-bool face_bot = false;
+int face = 0;
+
+enum {
+	FACE_IDLE,
+	FACE_RIGHT,
+	FACE_DOWN,
+	FACE_LEFT,
+	FACE_UP,
+};
 
 void InitGameScreen(void)
 {
@@ -72,45 +77,32 @@ void UpdateGameScreen(void)
     if (currentFrame > 1)
       currentFrame = 0;
 
-    if (face_left == true || face_right == true)
+    if (face == FACE_LEFT || face == FACE_RIGHT) {
       frameRec.x = (float)currentFrame * (float)player.width / 10 + (float)player.width / 10 * 8;
-    if (face_top == true)
+    } else if (face == FACE_UP) {
       frameRec.x = (float)currentFrame * (float)player.width / 10 + (float)player.width / 10 * 6;
-    if (face_bot == true)
+    } else if (face == FACE_DOWN) {
       frameRec.x = (float)currentFrame * (float)player.width / 10 + (float)player.width / 10 * 4;
+    }
   }
 
-  if (IsKeyDown(KEY_UP))
-  {
+  face = FACE_IDLE;
+
+  if (IsKeyDown(KEY_UP)) {
     playerPosition.y -= 10;
-    face_top = true;
-    face_bot = false;
-    face_right = false;
-    face_left = false;
+    face = FACE_UP;
   }
-  else if (IsKeyDown(KEY_DOWN))
-  {
+  if (IsKeyDown(KEY_DOWN)) {
     playerPosition.y += 10;
-    face_bot = true;
-    face_top = false;
-    face_right = false;
-    face_left = false;
+    face = FACE_DOWN;
   }
-  else if (IsKeyDown(KEY_RIGHT))
-  {
+  if (IsKeyDown(KEY_RIGHT)) {
     playerPosition.x += 10;
-    face_right = true;
-    face_left = false;
-    face_top = false;
-    face_bot = false;
+    face = FACE_RIGHT;
   }
-  else if (IsKeyDown(KEY_LEFT))
-  {
+  if (IsKeyDown(KEY_LEFT)) {
     playerPosition.x -= 10;
-    face_left = true;
-    face_right = false;
-    face_top = false;
-    face_bot = false;
+    face = FACE_LEFT;
   }
 
   // Update the center tile
@@ -118,10 +110,9 @@ void UpdateGameScreen(void)
   // Update the camera
   camera.target = (Vector2){.x = playerPosition.x - width / 2 + player.width / 20,
                             .y = playerPosition.y - height / 2 + player.height / 40};
-};
+}
 
-void DrawGameScreen(void)
-{
+void DrawGameScreen(void) {
   BeginMode2D(camera);
   // Draw 9 background tiles from the center tile.
   for (int i = -1; i < 2; i++)
@@ -134,18 +125,18 @@ void DrawGameScreen(void)
     }
   }
 
-  if (face_left)
+  if (face == FACE_LEFT)
   {
     // frameRec.width = -frameRec.width;
-    DrawTextureRec(player, (Rectangle){frameRec.x, frameRec.y, -frameRec.width, frameRec.height}, playerPosition, WHITE); // Draw part of the texture
+    DrawTextureRec(player, (Rectangle){frameRec.x, frameRec.y, -frameRec.width, frameRec.height}, playerPosition, WHITE);
   }
-  else if (face_top || face_bot || face_right)
+  else if (face != FACE_IDLE)
   {
-    DrawTextureRec(player, frameRec, playerPosition, WHITE); // Draw part of the texture
+    DrawTextureRec(player, frameRec, playerPosition, WHITE);
   }
   else
   {
-    DrawTextureRec(player, (Rectangle){0.0f, frameRec.y, frameRec.width, frameRec.height}, playerPosition, WHITE); // Draw part of the texture
+    DrawTextureRec(player, (Rectangle){0.0f, frameRec.y, frameRec.width, frameRec.height}, playerPosition, WHITE);
   }
 
   EndMode2D();
