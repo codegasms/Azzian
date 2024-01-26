@@ -1,5 +1,6 @@
 #include "screens.h"
 #include <raylib.h>
+#include <math.h>
 
 static Vector2 playerPosition = {0};
 static Vector2 centerTile = {0, 0};
@@ -12,8 +13,8 @@ int currentFrame = 0;
 int framesCounter = 0;
 int framesSpeed = 0;
 
-static int width;
-static int height;
+static int WIDTH;
+static int HEIGHT;
 
 static int finishScreen = 0;
 
@@ -46,8 +47,8 @@ void InitGameScreen(void)
   player = LoadTextureFromImage(image);
 
   // Getting width and height
-  width = GetScreenWidth();
-  height = GetScreenHeight();
+  WIDTH = GetScreenWidth();
+  HEIGHT = GetScreenHeight();
 
   frameRec = (Rectangle){(float)player.width / 10, 17.0 * (float)player.height / 20, (float)player.width / 10, (float)player.height / 20};
 
@@ -57,8 +58,8 @@ void InitGameScreen(void)
 
   // Initializing the camera
   camera.offset = (Vector2){0, 0};
-  camera.target = (Vector2){.x = playerPosition.x - width / 2 + player.width / 20,
-                            .y = playerPosition.y - GetScreenHeight() / 2 + player.height / 40};
+  camera.target = (Vector2){.x = playerPosition.x - (float) WIDTH / 2 + (float) player.width / 20,
+                            .y = playerPosition.y - (float) HEIGHT / 2 + (float) player.height / 40};
   camera.rotation = 0;
   camera.zoom = 1.0f;
 };
@@ -88,28 +89,40 @@ void UpdateGameScreen(void)
 
   face = FACE_IDLE;
 
+  int deltaX = 0, deltaY = 0;
+  static const int moveSize = 10;
+
+  if (IsKeyDown(KEY_LEFT)) {
+    deltaX -= 1;
+    face = FACE_LEFT;
+  }
+  if (IsKeyDown(KEY_RIGHT)) {
+    deltaX += 1;
+    face = FACE_RIGHT;
+  }
   if (IsKeyDown(KEY_UP)) {
-    playerPosition.y -= 10;
+    deltaY -= 1;
     face = FACE_UP;
   }
   if (IsKeyDown(KEY_DOWN)) {
-    playerPosition.y += 10;
+    deltaY += 1;
     face = FACE_DOWN;
   }
-  if (IsKeyDown(KEY_RIGHT)) {
-    playerPosition.x += 10;
-    face = FACE_RIGHT;
-  }
-  if (IsKeyDown(KEY_LEFT)) {
-    playerPosition.x -= 10;
-    face = FACE_LEFT;
-  }
+
+	if (deltaX != 0 && deltaY != 0) {
+		const int diagMoveSize = sqrt((moveSize * moveSize) / 2.0);
+		playerPosition.x += deltaX * diagMoveSize;
+		playerPosition.y += deltaY * diagMoveSize;
+	} else {
+		playerPosition.x += deltaX * moveSize;
+		playerPosition.y += deltaY * moveSize;
+	}
 
   // Update the center tile
   centerTile = GetCenterTileLocation();
   // Update the camera
-  camera.target = (Vector2){.x = playerPosition.x - width / 2 + player.width / 20,
-                            .y = playerPosition.y - height / 2 + player.height / 40};
+  camera.target = (Vector2){.x = playerPosition.x - (float) WIDTH  / 2 + (float) player.width / 20,
+                            .y = playerPosition.y - (float) HEIGHT / 2 + (float) player.height / 40};
 }
 
 void DrawGameScreen(void) {
@@ -120,8 +133,8 @@ void DrawGameScreen(void) {
     for (int j = -1; j < 2; j++)
     {
       DrawTexture(background,
-                  (centerTile.x * width - (width / 2)) + (width * i),
-                  (centerTile.y * height - (height / 2)) + (height * j), WHITE);
+                  (centerTile.x * WIDTH - (WIDTH / 2)) + (WIDTH * i),
+                  (centerTile.y * HEIGHT - (HEIGHT / 2)) + (HEIGHT * j), WHITE);
     }
   }
 
@@ -158,8 +171,8 @@ int FinishGameScreen(void) { return finishScreen; };
 // background is the same size as the screen).
 Vector2 GetCenterTileLocation()
 {
-  float x = (playerPosition.x + width / 2) / width;
-  float y = (playerPosition.y + height / 2) / height;
+  float x = (playerPosition.x + WIDTH / 2) / WIDTH;
+  float y = (playerPosition.y + HEIGHT / 2) / HEIGHT;
   return (Vector2){x < 0 ? (int)(x - 1) : (int)(x),
                    y < 0 ? (int)(y - 1) : (int)(y)};
 }
