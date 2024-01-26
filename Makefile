@@ -1,18 +1,34 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
-LIBS = -lraylib
+# Compiler
+CC := gcc
 
-SRCS = main.c screen_game.c
-OBJS = $(SRCS:.c=.o)
-EXEC = Azzian
+# Directories
+SRC_DIR := screens
+BIN_DIR := bin
 
-all: $(EXEC)
+# Source files
+SRCS := $(wildcard $(SRC_DIR)/*.c)
 
-$(EXEC): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(EXEC) $(LIBS)
+# Object files
+OBJS := $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(SRCS))
 
-%.o: %.c
+# Executable file
+TARGET := Azzian
+
+# Compiler flags
+CFLAGS := -Wall -Wextra -ggdb -std=c99 -Iheaders/
+
+# Linker flags
+LDFLAGS := -lraylib
+
+# Build target
+$(TARGET): $(OBJS)
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+# Compile source files
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Clean build artifacts
 clean:
-	rm -f $(OBJS) $(EXEC)
+	rm -rf $(BIN_DIR)/*.o $(TARGET)
+	rm -f Azzian
