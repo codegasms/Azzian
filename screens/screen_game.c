@@ -1,3 +1,4 @@
+#include "chappal.h"
 #include "screens.h"
 #include <math.h>
 #include <raylib.h>
@@ -20,6 +21,11 @@ static int finishScreen = 0;
 
 int face = 0;
 
+// Testing
+Texture2D chappalTexture = {0};
+Chappal* chappal = {0};
+// End Testing
+
 enum {
 	FACE_IDLE,
 	FACE_RIGHT,
@@ -29,9 +35,15 @@ enum {
 };
 
 void InitGameScreen(void) {
+
 	// Initialize player position
 	playerPosition.x = 0.0f;
 	playerPosition.y = 0.0f;
+
+	// Testing
+	chappalTexture = LoadTexture("resources/book.png");
+	chappal = CreateChappal(chappalTexture, playerPosition);
+	// End Testing
 
 	// Initialize the center tile location. This is used for mapping the 9
 	// background tiles.
@@ -71,6 +83,10 @@ void InitGameScreen(void) {
 Vector2 GetCenterTileLocation();
 
 void UpdateGameScreen(void) {
+	// Testing
+	UpdateChappal(chappal);
+	// End Testing
+
 	framesCounter++;
 
 	if (framesCounter >= (60 / framesSpeed)) {
@@ -161,11 +177,19 @@ void DrawGameScreen(void) {
 			WHITE);
 	}
 
+	// Testing
+	DrawChappal(chappal);
+	// End Testing
+
 	EndMode2D();
 };
 
 // Unloads the textures. I mean what else did you expect from the name?
 void UnloadGameScreen(void) {
+	// Testing
+	UnloadTexture(chappalTexture);
+	DestroyChappal(chappal);
+	// End Testing
 	UnloadTexture(background);
 	UnloadTexture(player);
 };
