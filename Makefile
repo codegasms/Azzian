@@ -18,7 +18,7 @@ TARGET := Azzian
 CFLAGS := -Wall -Wextra -ggdb -std=c99 -Iheaders/
 
 # Linker flags
-LDFLAGS := -lraylib
+LDFLAGS := -lraylib -lm
 
 # Build target
 $(TARGET): $(OBJS)
