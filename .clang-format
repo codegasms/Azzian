@@ -1,0 +1,30 @@
+---
+BasedOnStyle: LLVM
+IndentWidth: 4
+---
+Language: Cpp
+AccessModifierOffset: -4
+AlignAfterOpenBracket: AlwaysBreak
+AlignArrayOfStructures: Right
+AlignConsecutiveAssignments: None
+AlignOperands: Align
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: Empty
+AllowShortLoopsOnASingleLine: false
+BinPackArguments: false
+BinPackParameters: false
+BreakConstructorInitializers: BeforeColon
+ColumnLimit: 100
+DerivePointerAlignment: true
+ExperimentalAutoDetectBinPacking: false
+IndentWidth: 4
+PointerAlignment: Right
+TabWidth: 4
+UseTab: AlignWithSpaces
+...
