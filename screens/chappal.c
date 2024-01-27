@@ -7,7 +7,6 @@
 
 // Creates a new chappal at a random location with a random rotation speed.
 // Speed will increase with time.
-
 static float speed = 6.0f;
 
 Chappal* CreateChappal(Texture2D texture, Vector2 target) {

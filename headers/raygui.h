@@ -3766,8 +3766,8 @@ int GuiSliderPro(
 	if (value == NULL)
 		value = &temp;
 
-	int sliderValue = (int)(((*value - minValue) / (maxValue - minValue)) *
-	                        (bounds.width - 2 * GuiGetStyle(SLIDER, BORDER_WIDTH)));
+	int sliderValue =
+		(int)(((*value - minValue) / (maxValue - minValue)) * (bounds.width - 2 * GuiGetStyle(SLIDER, BORDER_WIDTH)));
 
 	Rectangle slider = {
 		bounds.x,
@@ -5978,8 +5978,8 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
 		TEXT_WRAP_MODE); // Wrap-mode only available in read-only mode, no for text editing
 
 	// TODO: WARNING: This totalHeight is not valid for vertical alignment in case of word-wrap
-	float totalHeight = (float)(lineCount * GuiGetStyle(DEFAULT, TEXT_SIZE) +
-	                            (lineCount - 1) * GuiGetStyle(DEFAULT, TEXT_SIZE) / 2);
+	float totalHeight =
+		(float)(lineCount * GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1) * GuiGetStyle(DEFAULT, TEXT_SIZE) / 2);
 	float posOffsetY = 0.0f;
 
 	for (int i = 0; i < lineCount; i++) {
