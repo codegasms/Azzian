@@ -1,11 +1,17 @@
+#include "chappal.h"
 #include "screens.h"
 #include <math.h>
 #include <raylib.h>
+#include <raymath.h>
+#include <stdlib.h>
+
+#define SPAWN_DELAY 0.75f
 
 static Vector2 playerPosition = {0};
 static Vector2 centerTile = {0, 0};
 static Texture2D background = {0};
 static Texture2D player = {0};
+Texture2D chappalTexture = {0};
 static Camera2D camera = {0};
 
 Rectangle frameRec = {0};
@@ -17,6 +23,7 @@ static int WIDTH;
 static int HEIGHT;
 
 static int finishScreen = 0;
+const bool debug = true;
 
 int face = 0;
 
@@ -28,10 +35,30 @@ enum {
 	FACE_UP,
 };
 
+typedef struct Node {
+	Chappal* chappal;
+	struct Node* next;
+	struct Node* prev;
+} Node;
+
+typedef struct ChappalList {
+	Node* head;
+} ChappalList;
+
+static ChappalList* chappalList;
+
 void InitGameScreen(void) {
+
 	// Initialize player position
 	playerPosition.x = 0.0f;
 	playerPosition.y = 0.0f;
+
+	// Testing
+	chappalTexture = LoadTexture("resources/book.png");
+	chappalList = (ChappalList*)malloc(sizeof(ChappalList));
+	chappalList->head = NULL;
+	// chappal = CreateChappal(chappalTexture, playerPosition);
+	// End Testing
 
 	// Initialize the center tile location. This is used for mapping the 9
 	// background tiles.
@@ -68,12 +95,50 @@ void InitGameScreen(void) {
 	camera.zoom = 1.0f;
 };
 
+Node* createNode(Chappal* chappal) {
+	Node* node = (Node*)malloc(sizeof(Node));
+	node->chappal = chappal;
+	node->next = NULL;
+	node->prev = NULL;
+	return node;
+}
+
+void SpawnChappal() {
+	Chappal* chappal = CreateChappal(chappalTexture, playerPosition);
+	Node* node = createNode(chappal);
+	if (chappalList->head == NULL) {
+		chappalList->head = node;
+	} else {
+		Node* temp = chappalList->head;
+		while (temp->next != NULL) {
+			temp = temp->next;
+		}
+		temp->next = node;
+		node->prev = temp;
+	}
+}
+
+void DeleteChappal(Node* node) {
+	if (node->prev == NULL) {
+		chappalList->head = node->next;
+	} else {
+		node->prev->next = node->next;
+	}
+	if (node->next != NULL) {
+		node->next->prev = node->prev;
+	}
+	DestroyChappal(node->chappal);
+	free(node);
+}
+
 Vector2 GetCenterTileLocation();
 
 void UpdateGameScreen(void) {
+
 	framesCounter++;
 
 	if (framesCounter >= (60 / framesSpeed)) {
+		SpawnChappal();
 		framesCounter = 0;
 		currentFrame++;
 
@@ -129,6 +194,22 @@ void UpdateGameScreen(void) {
 	camera.target = (Vector2){
 		.x = playerPosition.x - (float)WIDTH / 2 + (float)player.width / 20,
 		.y = playerPosition.y - (float)HEIGHT / 2 + (float)player.height / 40};
+
+	// Draw chappals
+	Node* node = chappalList->head;
+	while (node != NULL) {
+		UpdateChappal(node->chappal);
+		if (node->chappal->position.x < playerPosition.x - (WIDTH / 2) - SPAWN_OFFSET ||
+		    node->chappal->position.x > playerPosition.x + (WIDTH / 2) + SPAWN_OFFSET ||
+		    node->chappal->position.y < playerPosition.y - (HEIGHT / 2) - SPAWN_OFFSET ||
+		    node->chappal->position.y > playerPosition.y + (HEIGHT / 2) + SPAWN_OFFSET) {
+			Node* temp = node;
+			node = node->next;
+			DeleteChappal(temp);
+		} else {
+			node = node->next;
+		}
+	}
 }
 
 void DrawGameScreen(void) {
@@ -160,12 +241,38 @@ void DrawGameScreen(void) {
 			playerPosition,
 			WHITE);
 	}
+	// Draw chappals
+	Node* node = chappalList->head;
+	int counter = 0;
+	while (node != NULL) {
+		DrawChappal(node->chappal);
+		node = node->next;
+		counter++;
+	}
+	// Testing
+	if (debug) {
+		DrawText(
+			TextFormat("Chappals: %d", counter),
+			playerPosition.x - 600,
+			playerPosition.y - 300,
+			20,
+			BLACK);
+	}
+	// End Testing
 
 	EndMode2D();
 };
 
 // Unloads the textures. I mean what else did you expect from the name?
 void UnloadGameScreen(void) {
+	// Delete chappals
+	UnloadTexture(chappalTexture);
+	Node* node = chappalList->head;
+	while (node != NULL) {
+		Node* temp = node;
+		node = node->next;
+		DeleteChappal(temp);
+	}
 	UnloadTexture(background);
 	UnloadTexture(player);
 };
