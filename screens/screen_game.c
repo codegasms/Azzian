@@ -16,14 +16,21 @@ static Texture2D player = {0};
 static Texture2D chappalTexture = {0};
 static Texture2D heart = {0};
 static Texture2D menuScreen = {0};
+static Texture2D endScreen = {0};
+static Texture2D gameOverTexture = {0};
+static Texture2D skillIssue = {0};
+static Texture2D loser = {0};
 static Texture2D gamePaused = {0};
+static Texture2D scoreBoard = {0};
 static Texture2D button1 = {0};
 static Texture2D button2 = {0};
 static Texture2D button3 = {0};
 static Texture2D button4 = {0};
 static Texture2D button5 = {0};
-static Texture2D scoreBoard = {0};
 static Texture2D button6 = {0};
+static Texture2D button7 = {0};
+static Texture2D button8 = {0};
+static Texture2D button9 = {0};
 static Texture2D button = {0};
 static Camera2D camera = {0};
 Texture2D grassland = {0};
@@ -50,10 +57,13 @@ static int lives;
 static int score;
 
 static bool paused = false;
+static bool gameOver = false;
 static bool pressed_1;
 static bool pressed_2;
+static bool pressed_3;
 static int btnState_1;
 static int btnState_2;
+static int btnState_3;
 
 const bool debug = false;
 
@@ -91,8 +101,10 @@ void InitGameScreen(void) {
 	score = 0;
 	pressed_1 = false;
 	pressed_2 = false;
+	pressed_3 = false;
 	btnState_1 = 0;
-	btnState_1 = 0;
+	btnState_2 = 0;
+	btnState_3 = 0;
 	lives = MAX_LIVES;
 
 	// Initialize player position
@@ -118,6 +130,26 @@ void InitGameScreen(void) {
 	Image menuImage = LoadImage("resources/Sprites/UI_Flat_Frame_01_Standard.png");
 	ImageResizeNN(&menuImage, menuImage.width * 8, menuImage.height * 6);
 	menuScreen = LoadTextureFromImage(menuImage);
+	UnloadImage(menuImage);
+
+	menuImage = LoadImage("resources/Sprites/UI_Flat_Frame_02_Standard.png");
+	ImageResizeNN(&menuImage, menuImage.width * 8, menuImage.height * 6);
+	endScreen = LoadTextureFromImage(menuImage);
+	UnloadImage(menuImage);
+
+	menuImage = LoadImage("resources/game_over.png");
+	ImageResizeNN(&menuImage, menuImage.width, menuImage.height);
+	gameOverTexture = LoadTextureFromImage(menuImage);
+	UnloadImage(menuImage);
+
+	menuImage = LoadImage("resources/skillissue.png");
+	ImageResizeNN(&menuImage, menuImage.width / 2, menuImage.height / 2);
+	skillIssue = LoadTextureFromImage(menuImage);
+	UnloadImage(menuImage);
+
+	menuImage = LoadImage("resources/loser.png");
+	ImageResizeNN(&menuImage, menuImage.width / 2, menuImage.height / 2);
+	loser = LoadTextureFromImage(menuImage);
 	UnloadImage(menuImage);
 
 	gamePaused = LoadTexture("resources/game_paused.png");
@@ -161,6 +193,24 @@ void InitGameScreen(void) {
 	ImageResizeNN(&buttonImage, buttonImage.width * 2, buttonImage.height * 2);
 	ImageDrawText(&buttonImage, "Title", 70, 25, 20, BLACK);
 	button6 = LoadTextureFromImage(buttonImage);
+	UnloadImage(buttonImage);
+
+	buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a1.png");
+	ImageResizeNN(&buttonImage, buttonImage.width * 4, buttonImage.height * 2);
+	ImageDrawText(&buttonImage, "Sorry I have major skill issues.", 30, 15, 20, BLACK);
+	button7 = LoadTextureFromImage(buttonImage);
+	UnloadImage(buttonImage);
+
+	buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a2.png");
+	ImageResizeNN(&buttonImage, buttonImage.width * 4, buttonImage.height * 2);
+	ImageDrawText(&buttonImage, "Sorry I have major skill issues", 30, 20, 20, BLACK);
+	button8 = LoadTextureFromImage(buttonImage);
+	UnloadImage(buttonImage);
+
+	buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a3.png");
+	ImageResizeNN(&buttonImage, buttonImage.width * 4, buttonImage.height * 2);
+	ImageDrawText(&buttonImage, "Sorry I have major skill issues", 30, 25, 20, BLACK);
+	button9 = LoadTextureFromImage(buttonImage);
 	UnloadImage(buttonImage);
 
 	Image scoreImage = LoadImage("resources/Sprites/UI_Flat_Banner_02_Downward.png");
@@ -274,7 +324,7 @@ void UpdateGameScreen(void) {
 			button.height};
 	}
 
-	if (paused) {
+	if (paused && !gameOver) {
 		Vector2 mousePoint = GetMousePosition();
 
 		if (debug) {
@@ -319,6 +369,34 @@ void UpdateGameScreen(void) {
 			paused = false;
 			pressed_2 = false;
 		}
+	} else if (gameOver) {
+		Vector2 mousePoint = GetMousePosition();
+
+		if (debug) {
+			printf("x: %f; y:%f\n", mousePoint.x, mousePoint.y);
+		}
+
+		if (mousePoint.x >= 450 && mousePoint.x <= 830 && mousePoint.y >= 475 &&
+		    mousePoint.y <= 540) {
+			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+				btnState_3 = 2;
+			} else {
+				btnState_3 = 1;
+			}
+
+			if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+				pressed_3 = true;
+			}
+		} else {
+			btnState_3 = 0;
+		}
+
+		if (pressed_3) {
+			finishScreen = 1;
+			gameOver = false;
+			pressed_3 = false;
+		}
+
 	} else {
 		framesCounter++;
 
@@ -422,7 +500,8 @@ void UpdateGameScreen(void) {
 				node = node->next;
 				DeleteChappalNode(temp);
 				if (lives == 0) {
-					finishScreen = 1;
+					// finishScreen = 1;
+					gameOver = true;
 				}
 			}
 			if (node->chappal->position.x < playerPosition.x - (WIDTH / 2) - (SPAWN_OFFSET + 100) ||
@@ -730,6 +809,70 @@ void DrawGameScreen(void) {
 		} else if (btnState_2 == 2) {
 			DrawTexture(button6, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
 		}
+	} else if (gameOver) {
+		// Dim background
+		DrawRectangle(
+			playerPosition.x - (WIDTH / 2.0f) + (playerSpriteWidth / 2.0f),
+			playerPosition.y - (HEIGHT / 2.0f) + (playerSpriteHeight / 2.0f),
+			WIDTH,
+			HEIGHT,
+			ColorAlpha(BLACK, 0.3));
+		// Draw game over board
+		DrawTexture(
+			endScreen,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2),
+			WHITE);
+		// Draw game over text
+		DrawTexture(
+			gameOverTexture,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (gameOverTexture.width / 2),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (gameOverTexture.height / 2) - 200,
+			WHITE);
+
+		// Draw skill issue text
+		DrawTexture(
+			skillIssue,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (skillIssue.width / 2),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (skillIssue.height / 2) + 45,
+			WHITE);
+
+		// Draw loser text
+		DrawTexture(
+			loser,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (loser.width / 2),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (loser.height / 2) - 100,
+			WHITE);
+
+		// Draw score
+		DrawText(
+			TextFormat("%d POINTS", score),
+			playerPosition.x + (playerSpriteWidth / 2.0f) -
+				(MeasureText(TextFormat("%d POINTS", score), 40) / 2.0f),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - 50,
+			40,
+			RED);
+
+		// Draw buttons
+		if (btnState_3 == 0) {
+			DrawTexture(
+				button7,
+				playerPosition.x + (playerSpriteWidth / 2.0f) - (button7.width / 2.0f),
+				playerPosition.y + (playerSpriteHeight / 2.0f) - (button7.height / 2.0f) + 150,
+				WHITE);
+		} else if (btnState_3 == 1) {
+			DrawTexture(
+				button8,
+				playerPosition.x + (playerSpriteWidth / 2.0f) - (button8.width / 2.0f),
+				playerPosition.y + (playerSpriteHeight / 2.0f) - (button8.height / 2.0f) + 150,
+				WHITE);
+		} else if (btnState_3 == 2) {
+			DrawTexture(
+				button9,
+				playerPosition.x + (playerSpriteWidth / 2.0f) - (button9.width / 2.0f),
+				playerPosition.y + (playerSpriteHeight / 2.0f) - (button9.height / 2.0f) + 150,
+				WHITE);
+		}
 	}
 
 	// Testing
@@ -770,6 +913,11 @@ void UnloadGameScreen(void) {
 		DeleteChappalNode(temp);
 	}
 	UnloadTexture(heart);
+	UnloadTexture(scoreBoard);
+	UnloadTexture(endScreen);
+	UnloadTexture(gameOverTexture);
+	UnloadTexture(skillIssue);
+	UnloadTexture(loser);
 	UnloadTexture(menuScreen);
 	UnloadTexture(gamePaused);
 	UnloadTexture(background);
@@ -779,6 +927,9 @@ void UnloadGameScreen(void) {
 	UnloadTexture(button4);
 	UnloadTexture(button5);
 	UnloadTexture(button6);
+	UnloadTexture(button7);
+	UnloadTexture(button8);
+	UnloadTexture(button9);
 	UnloadTexture(button);
 	UnloadTexture(player);
 };
