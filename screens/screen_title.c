@@ -18,7 +18,7 @@ static int menuButtonState = 0;
 static int finishScreen = 0;
 
 void InitTitleScreen(void) {
-	GuiSetStyle(DEFAULT, TEXT_SIZE, 50);
+	GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, 0x1f3b4dff);
 
 	Image game = LoadImage("resources/azzian.png");
 	ImageResizeNN(&game, game.width * 1.2, game.height * 1.2);
@@ -57,6 +57,7 @@ void DrawTitleScreen(void) {
 
 	GuiSetIconScale(4);
 
+	GuiSetStyle(DEFAULT, TEXT_SIZE, 50);
 	Rectangle boundBox = {cellWidth / 2, cellHeight * 2, cellWidth, cellHeight - padding};
 	// GuiButton(boundBox, "Ur Mom 1");
 	if (GuiImageButtonEx(
@@ -126,6 +127,33 @@ void DrawTitleScreen(void) {
 			(Rectangle){0, 0, smallButton.width, smallButton.height})) {
 		menuButtonState = 0;
 		menuButtonState |= 1 << 5;
+	}
+
+	if (((menuButtonState >> 3) & 1)) {
+		GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+		GuiMessageBox(
+			(Rectangle){screenWidth / 2 - 200, screenHeight / 2 - 100, 400, 200},
+			"Do You Want To Quit",
+			"If You Quit Ur GAY",
+			"Agree");
+	}
+
+	if (((menuButtonState >> 4) & 1)) {
+		GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+		GuiMessageBox(
+			(Rectangle){screenWidth / 2 - 200, screenHeight / 2 - 100, 400, 200},
+			"Change The Language?",
+			TextFormat("Learn English First & Come Play "),
+			"Agree");
+	}
+
+	if (((menuButtonState >> 5) & 1)) {
+		GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+		GuiMessageBox(
+			(Rectangle){screenWidth / 2 - 200, screenHeight / 2 - 100, 400, 200},
+			"All Of Our Underpaid Labours",
+			"It's Illegal To Reveal Their Names",
+			"I Don't Give A F*ck");
 	}
 };
 
