@@ -7,6 +7,8 @@ GameScreen currentScreen = TITLE;
 
 void UpdateDrawFrame(void);
 
+static bool quitGame = false;
+
 int main() {
 	InitWindow(1280, 720, "Test Game");
 
@@ -26,6 +28,9 @@ int main() {
 	while (!WindowShouldClose()) {
 		ClearBackground(RAYWHITE);
 		UpdateDrawFrame();
+		if (quitGame) {
+			break;
+		}
 	}
 
 	switch (currentScreen) {
@@ -59,6 +64,8 @@ void UpdateDrawFrame(void) {
 			UnloadTitleScreen();
 			currentScreen = GAMEPLAY;
 			InitGameScreen();
+		} else if (FinishTitleScreen() == 2) {
+			quitGame = true;
 		}
 		break;
 	default:
