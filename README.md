@@ -12,7 +12,7 @@ core of the game made for the 3 day game jam Global Gamejam 2024
 # TODO 2024-01-27
 
 - [ ] Implement collision
-- [ ] Implement chappal rain
+- [x] Implement chappal rain
 - [ ] Design levels {Garden, School, Home} -> Only change the textures and tiles.
 - [ ] Enemy random encounter
 - [ ] Implement hearts
