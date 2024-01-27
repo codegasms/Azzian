@@ -48,19 +48,18 @@ void UpdateDrawFrame(void) {
 	switch (currentScreen) {
 	case GAMEPLAY:
 		UpdateGameScreen();
-
 		if (FinishGameScreen() == 1) {
+			currentScreen = TITLE;
 			UnloadGameScreen();
 			InitTitleScreen();
-			currentScreen = TITLE;
 		}
 		break;
 	case TITLE:
 		UpdateTitleScreen();
 		if (FinishTitleScreen() == 1) {
 			UnloadTitleScreen();
-			InitGameScreen();
 			currentScreen = GAMEPLAY;
+			InitGameScreen();
 		}
 		break;
 	default:

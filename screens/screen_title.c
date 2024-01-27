@@ -20,6 +20,9 @@ static int menuButtonState = 0;
 static int finishScreen = 0;
 
 void InitTitleScreen(void) {
+
+	finishScreen = 0;
+
 	GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, 0x1f3b4dff);
 
 	Image game = LoadImage("resources/azzian.png");
@@ -39,6 +42,12 @@ void InitTitleScreen(void) {
 	Image small2 = LoadImage("resources/Sprites/UI_Flat_Button_Small_Lock_02a2.png");
 	ImageResizeNN(&small2, small2.width * 3, small2.height * 3);
 	smallButtonPressed = LoadTextureFromImage(small2);
+
+	UnloadImage(game);
+	UnloadImage(big);
+	UnloadImage(big2);
+	UnloadImage(small);
+	UnloadImage(small2);
 }
 
 void UpdateTitleScreen(void){
@@ -160,8 +169,12 @@ void DrawTitleScreen(void) {
 	}
 };
 
-void UnloadTitleScreen(void){
-
+void UnloadTitleScreen(void) {
+	UnloadTexture(gameName);
+	UnloadTexture(bigButton);
+	UnloadTexture(bigButtonPressed);
+	UnloadTexture(smallButton);
+	UnloadTexture(smallButtonPressed);
 };
 
 int FinishTitleScreen(void) {
