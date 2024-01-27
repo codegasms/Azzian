@@ -6,7 +6,6 @@
 GameScreen currentScreen = TITLE;
 
 void UpdateDrawFrame(void);
-Vector2 GetCenterTileLocation();
 
 int main() {
 	InitWindow(1280, 720, "Test Game");
