@@ -17,22 +17,36 @@ core of the game made for the 3 day game jam Global Gamejam 2024
 
 # TODO 2024-01-27
 
-- [ ] Implement collision
+- [x] Implement collision
 - [x] Implement chappal rain
 - [ ] Design levels {Garden, School, Home} -> Only change the textures and tiles.
 - [ ] Enemy random encounter
+- [x] Complete Title Screen
+- [x] Implement Pause menu & score
+- [x] Menu to Game transition
 - [x] Implement hearts
 - [ ] Implement SFX
-- [ ] Implement Parry (maybe?)
+- [ ] ~Implement Parry (maybe?)~
 
 > Design
 
-- [ ] School Texture
-- [ ] School elements
-- [ ] House Texture
-- [ ] House Elements
+- [ ] ~School Texture~
+- [ ] ~School elements~
+- [x] House Texture
+- [x] House Elements
 - [ ] Search funny SFX
 - [ ] Get "inpsiration" from Steven He
+
+# TODO 2024-01-28
+
+- [ ] Design levels {Garden, Home} -> Only change the textures and tiles.
+- [ ] Transition b/w levels
+- [ ] UI/UX development in screen transition
+- [ ] Enemy random encounter
+- [ ] Generate QnA which are to be shown on encounter with enemy
+- [ ] Search funny SFX
+- [ ] Implement SFX
+- [ ] Get "inpsiration" from Steven He & other Asian Youtubers
 
 > SFX
 
