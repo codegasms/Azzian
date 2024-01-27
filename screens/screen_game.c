@@ -94,13 +94,13 @@ void UpdateGameScreen(void) {
 
 		if (face == FACE_LEFT || face == FACE_RIGHT) {
 			frameRec.x =
-				(float)currentFrame * (float)player.width / 10 + (float)player.width / 10 * 8;
+				currentFrame * player.width / 10.0f + player.width / 10.0f * 8;
 		} else if (face == FACE_UP) {
 			frameRec.x =
-				(float)currentFrame * (float)player.width / 10 + (float)player.width / 10 * 6;
+				currentFrame * player.width / 10.0f + player.width / 10.0f * 6;
 		} else if (face == FACE_DOWN) {
 			frameRec.x =
-				(float)currentFrame * (float)player.width / 10 + (float)player.width / 10 * 4;
+				currentFrame * player.width / 10.0f + player.width / 10.0f * 4;
 		}
 	}
 
@@ -109,19 +109,19 @@ void UpdateGameScreen(void) {
 	int deltaX = 0, deltaY = 0;
 	static const int moveSize = 10;
 
-	if (IsKeyDown(KEY_LEFT)) {
+	if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
 		deltaX -= 1;
 		face = FACE_LEFT;
 	}
-	if (IsKeyDown(KEY_RIGHT)) {
+	if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
 		deltaX += 1;
 		face = FACE_RIGHT;
 	}
-	if (IsKeyDown(KEY_UP)) {
+	if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
 		deltaY -= 1;
 		face = FACE_UP;
 	}
-	if (IsKeyDown(KEY_DOWN)) {
+	if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
 		deltaY += 1;
 		face = FACE_DOWN;
 	}
