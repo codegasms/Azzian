@@ -32,7 +32,7 @@ static int HEIGHT;
 
 static int finishScreen = 0;
 static int lives;
-const bool debug = true;
+const bool debug = false;
 
 int face = 0;
 
@@ -65,8 +65,8 @@ void InitGameScreen(void) {
 	playerPosition.y = 0.0f;
 
 	playerRec = (Rectangle){
-		playerPosition.x - (float)player.width / 20,
-		playerPosition.y - (float)player.height / 40,
+		playerPosition.x,
+		playerPosition.y,
 		(float)player.width / 10,
 		(float)player.height / 20};
 
@@ -133,7 +133,11 @@ Node* createNode(Chappal* chappal) {
 }
 
 void SpawnChappal() {
-	Chappal* chappal = CreateChappal(chappalTexture, playerPosition);
+	Chappal* chappal = CreateChappal(
+		chappalTexture,
+		(Vector2){
+			playerPosition.x + playerSpriteWidth / 2.0f,
+			playerPosition.y + playerSpriteHeight / 2.0f});
 	Node* node = createNode(chappal);
 	if (chappalList->head == NULL) {
 		chappalList->head = node;
@@ -224,8 +228,8 @@ void UpdateGameScreen(void) {
 		.y = playerPosition.y + playerSpriteHeight / 2.0f};
 
 	playerRec = (Rectangle){
-		playerPosition.x - (float)player.width / 20,
-		playerPosition.y - (float)player.height / 40,
+		playerPosition.x,
+		playerPosition.y,
 		(float)player.width / 10,
 		(float)player.height / 20};
 
@@ -481,7 +485,7 @@ void DrawGameScreen(void) {
 
 	// Testing
 	if (debug) {
-		DrawRectangle(-5, -5, 10, 10, RED);
+		DrawRectangleRec(playerRec, RED);
 		DrawText(
 			TextFormat("Lives: %d", lives),
 			playerPosition.x - 600,
