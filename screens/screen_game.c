@@ -31,6 +31,9 @@ static int HEIGHT;
 
 static int finishScreen = 0;
 static int lives;
+
+static bool paused = false;
+
 const bool debug = false;
 
 int face = 0;
@@ -173,119 +176,127 @@ int gTerrain[100 * 100];
 int gObstacles[100 * 100];
 
 void UpdateGameScreen(void) {
-	framesCounter++;
-
-	if (framesCounter >= (60 / framesSpeed)) {
-		SpawnChappal();
-		framesCounter = 0;
-		currentFrame++;
-
-		if (currentFrame > 1)
-			currentFrame = 0;
-
-		if (face == FACE_LEFT || face == FACE_RIGHT) {
-			frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 8;
-		} else if (face == FACE_UP) {
-			frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 6;
-		} else if (face == FACE_DOWN) {
-			frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 4;
-		}
+	if (IsKeyPressed(KEY_P)) {
+		paused = !paused;
 	}
 
-	face = FACE_IDLE;
+	if (!paused) {
+		framesCounter++;
 
-	int deltaX = 0, deltaY = 0;
-	static const int moveSize = 10;
+		if (framesCounter >= (60 / framesSpeed)) {
+			SpawnChappal();
+			framesCounter = 0;
+			currentFrame++;
 
-	if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-		deltaX -= 1;
-		face = FACE_LEFT;
-	}
-	if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-		deltaX += 1;
-		face = FACE_RIGHT;
-	}
-	if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
-		deltaY -= 1;
-		face = FACE_UP;
-	}
-	if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
-		deltaY += 1;
-		face = FACE_DOWN;
-	}
+			if (currentFrame > 1)
+				currentFrame = 0;
 
-	int moveX = 0, moveY = 0;
-
-	if (deltaX != 0 && deltaY != 0) {
-		const int diagMoveSize = sqrt((moveSize * moveSize) / 2.0);
-		moveX = deltaX * diagMoveSize;
-		moveY = deltaY * diagMoveSize;
-	} else {
-		moveX = deltaX * moveSize;
-		moveY = deltaY * moveSize;
-	}
-
-	SetCellsState();
-	UpdateTerrain();
-	UpdateObstacles();
-
-	{
-		int cx = playerPosition.x + playerSpriteWidth / 2.0f;
-		int cy = playerPosition.y + playerSpriteHeight / 2.0f;
-
-		bool collision = false;
-		for (int i = 4; i >= 1; --i) {
-			int nx = CellIdx(cx + (float)moveX / i, playerSpriteWidth);
-			int ny = CellIdx(cy + (float)moveY / i, playerSpriteHeight);
-
-			if (gObstacles[idx(ny - gStartY, nx - gStartX, gCols)] != -1) {
-				collision = true;
-				break;
+			if (face == FACE_LEFT || face == FACE_RIGHT) {
+				frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 8;
+			} else if (face == FACE_UP) {
+				frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 6;
+			} else if (face == FACE_DOWN) {
+				frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 4;
 			}
 		}
 
-		if (!collision) {
-			playerPosition.x += moveX;
-			playerPosition.y += moveY;
+		face = FACE_IDLE;
+
+		int deltaX = 0, deltaY = 0;
+		static const int moveSize = 10;
+
+		if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
+			deltaX -= 1;
+			face = FACE_LEFT;
 		}
-	}
-
-	// Update the camera
-	camera.offset = (Vector2){WIDTH / 2.0f, HEIGHT / 2.0f};
-	camera.target = (Vector2){
-		.x = playerPosition.x + playerSpriteWidth / 2.0f,
-		.y = playerPosition.y + playerSpriteHeight / 2.0f};
-
-	playerRec = (Rectangle){
-		playerPosition.x - player.width / 20.0f,
-		playerPosition.y - player.height / 40.0f,
-		player.width / 10.0f,
-		player.height / 20.0f};
-
-	// Draw chappals
-	Node* node = chappalList->head;
-	while (node != NULL) {
-		UpdateChappal(node->chappal);
-		Rectangle chappalRec =
-			(Rectangle){node->chappal->position.x - 10, node->chappal->position.y - 10, 20, 20};
-		if (CheckCollisionRecs(playerRec, chappalRec)) {
-			lives--;
-			Node* temp = node;
-			node = node->next;
-			DeleteChappalNode(temp);
-			if (lives == 0) {
-				finishScreen = 1;
-			}
+		if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
+			deltaX += 1;
+			face = FACE_RIGHT;
 		}
-		if (node->chappal->position.x < playerPosition.x - (WIDTH / 2.0f) - SPAWN_OFFSET ||
-		    node->chappal->position.x > playerPosition.x + (WIDTH / 2.0f) + SPAWN_OFFSET ||
-		    node->chappal->position.y < playerPosition.y - (HEIGHT / 2.0f) - SPAWN_OFFSET ||
-		    node->chappal->position.y > playerPosition.y + (HEIGHT / 2.0f) + SPAWN_OFFSET) {
-			Node* temp = node;
-			node = node->next;
-			DeleteChappalNode(temp);
+		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
+			deltaY -= 1;
+			face = FACE_UP;
+		}
+		if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
+			deltaY += 1;
+			face = FACE_DOWN;
+		}
+
+		int moveX = 0, moveY = 0;
+
+		if (deltaX != 0 && deltaY != 0) {
+			const int diagMoveSize = sqrt((moveSize * moveSize) / 2.0);
+			moveX = deltaX * diagMoveSize;
+			moveY = deltaY * diagMoveSize;
 		} else {
-			node = node->next;
+			moveX = deltaX * moveSize;
+			moveY = deltaY * moveSize;
+		}
+
+		SetCellsState();
+		UpdateTerrain();
+		UpdateObstacles();
+
+		{
+			int cx = playerPosition.x + playerSpriteWidth / 2.0f;
+			int cy = playerPosition.y + playerSpriteHeight / 2.0f;
+
+			bool collision = false;
+			for (int i = 4; i >= 1; --i) {
+				int nx = CellIdx(cx + (float)moveX / i, playerSpriteWidth);
+				int ny = CellIdx(cy + (float)moveY / i, playerSpriteHeight);
+
+				if (gObstacles[idx(ny - gStartY, nx - gStartX, gCols)] != -1) {
+					collision = true;
+					break;
+				}
+			}
+
+			if (!collision) {
+				playerPosition.x += moveX;
+				playerPosition.y += moveY;
+			}
+		}
+
+		// Update the camera
+		camera.offset = (Vector2){WIDTH / 2.0f, HEIGHT / 2.0f};
+		camera.target = (Vector2){
+			.x = playerPosition.x + playerSpriteWidth / 2.0f,
+			.y = playerPosition.y + playerSpriteHeight / 2.0f};
+
+		playerRec = (Rectangle){
+			playerPosition.x,
+			playerPosition.y,
+			(float)player.width / 10,
+			(float)player.height / 20};
+
+		// Draw chappals
+		Node* node = chappalList->head;
+		while (node != NULL) {
+			UpdateChappal(node->chappal);
+			Rectangle chappalRec =
+				(Rectangle){node->chappal->position.x - 10, node->chappal->position.y - 10, 20, 20};
+			if (CheckCollisionRecs(playerRec, chappalRec)) {
+				lives--;
+				Node* temp = node;
+				node = node->next;
+				DeleteChappalNode(temp);
+				if (lives == 0) {
+					finishScreen = 1;
+				}
+			}
+			if (node->chappal->position.x < playerPosition.x - (WIDTH / 2) - (SPAWN_OFFSET + 100) ||
+			    node->chappal->position.x > playerPosition.x + (WIDTH / 2) + (SPAWN_OFFSET + 100) ||
+			    node->chappal->position.y <
+			        playerPosition.y - (HEIGHT / 2) - (SPAWN_OFFSET + 100) ||
+			    node->chappal->position.y >
+			        playerPosition.y + (HEIGHT / 2) + (SPAWN_OFFSET + 100)) {
+				Node* temp = node;
+				node = node->next;
+				DeleteChappalNode(temp);
+			} else {
+				node = node->next;
+			}
 		}
 	}
 }
