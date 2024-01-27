@@ -48,6 +48,7 @@ Rectangle pauseBtn2Rec = {0};
 
 int currentFrame = 0;
 int framesCounter = 0;
+int switchCounter = 0;
 int framesSpeed = 0;
 
 int playerSpriteWidth = 0;
@@ -112,6 +113,8 @@ int idx(int i, int j, int n);
 
 void InitGameScreen(void) {
 	finishScreen = 0;
+	gGameLevel = 1;
+	SetSpeed(6.0f);
 	score = 0;
 	pressed_1 = false;
 	pressed_2 = false;
@@ -833,7 +836,7 @@ void DrawGameScreen(void) {
 			menuScreen,
 			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2.0f),
 			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2.0f),
-			WHITE);
+			(Color){175, 175, 175, 225});
 		// Draw game paused text
 		DrawTexture(
 			gamePaused,
@@ -869,7 +872,7 @@ void DrawGameScreen(void) {
 			endScreen,
 			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2),
 			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2),
-			WHITE);
+			(Color){175, 175, 175, 225});
 		// Draw game over text
 		DrawTexture(
 			gameOverTexture,
