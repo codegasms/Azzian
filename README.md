@@ -2,6 +2,12 @@
 
 core of the game made for the 3 day game jam Global Gamejam 2024
 
+## Running
+
+- Install [raylib](https://www.raylib.com/#supported-platforms) and its dependancies.
+- Run `make`
+- `./Azzian`
+
 # TODO 2024-01-26 - DONE
 
 - [x] Create a Title Screen
