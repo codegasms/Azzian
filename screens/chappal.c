@@ -7,6 +7,7 @@
 
 // Creates a new chappal at a random location with a random rotation speed.
 // Speed will increase with time.
+
 static float speed = 6.0f;
 
 Chappal* CreateChappal(Texture2D texture, Vector2 target) {
@@ -63,6 +64,14 @@ void DrawChappal(Chappal* chappal) {
 		(Vector2){(float)chappal->texture.width / 2, (float)chappal->texture.height / 2},
 		chappal->rotation,
 		WHITE);
+};
+
+void IncreaseSpeed() {
+	speed += 4.0f;
+};
+
+void SetSpeed(float newSpeed) {
+	speed = newSpeed;
 };
 
 void DestroyChappal(Chappal* chappal) {
