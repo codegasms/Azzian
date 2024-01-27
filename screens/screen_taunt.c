@@ -4,6 +4,11 @@
 
 Texture2D backgroundTexture = {0};
 Texture2D tauntCharacter = {0};
+Texture2D questionBgTex = {0};
+Texture2D optionsBgTex = {0};
+
+int tauntCharacterWidth = 0;
+int tauntCharacterHeight = 0;
 
 #define MAX_OPTIONS 4
 
@@ -27,6 +32,11 @@ const int paddingY = 10;
 const int marginX = 30;
 const int marginY = 30;
 
+const int tauntR = 0;
+const int tauntC = 0;
+
+int tauntPadding = 32 / 52 * 2;
+
 const int overlayMarginX = 140;
 const int overlayMarginY = 120;
 
@@ -40,11 +50,6 @@ void InitTauntScreen(void) {
 
 	const int screenWidth = GetScreenWidth();
 
-	// Load your background texture
-	// Texture2D backgroundTexture = LoadTexture("/home/aahnik/Downloads/transpa.jpg");
-	Image characterImage = LoadImage("/path/to/character.jpg");
-	ImageResizeNN(&characterImage, 1, 1);
-	Texture2D tauntCharacter = LoadTextureFromImage(characterImage);
 	// Define the question text
 	question.text = "What is the question?";
 
@@ -79,6 +84,26 @@ void InitTauntScreen(void) {
 
 		options[i].text = optionsText[i];
 	}
+
+	Image questionBgImg = LoadImage("resources/Sprites/UI_Flat_Frame_02_Standard.png");
+	ImageResizeNN(&questionBgImg, question.rect.width, question.rect.height);
+	questionBgTex = LoadTextureFromImage(questionBgImg);
+	UnloadImage(questionBgImg);
+
+	Image optionsBgImg = LoadImage("resources/Sprites/UI_Flat_Button_Large_Press_01a2.png");
+	ImageResizeNN(&optionsBgImg, options[0].rect.width, options[0].rect.height);
+
+	optionsBgTex = LoadTextureFromImage(optionsBgImg);
+	UnloadImage(optionsBgImg);
+
+	Image characterImage = LoadImage("resources/Character_Combined.png");
+
+	ImageResizeNN(&characterImage, taunter.rect.width, taunter.rect.height);
+	Texture2D tauntCharacter = LoadTextureFromImage(characterImage);
+	UnloadImage(characterImage);
+
+	tauntCharacterWidth = tauntCharacter.width / 4;
+	tauntCharacterHeight = tauntCharacter.height / 2;
 }
 
 void UpdateTauntScreen(void){
@@ -98,14 +123,18 @@ void DrawTauntScreen(void) {
 
 	// Draw taunter character
 	DrawRectangleRec(taunter.rect, DARKGRAY);
-	DrawText(taunter.name, taunter.rect.x + paddingX, taunter.rect.y + paddingY, 20, WHITE);
+	(Vector2){taunter.rect.x, taunter.rect.y},
+
+		DrawText(taunter.name, taunter.rect.x + paddingX, taunter.rect.y + paddingY, 20, WHITE);
 	// Draw question rectangle and text
-	DrawRectangleRec(question.rect, DARKGRAY);
+	DrawTexture(questionBgTex, question.rect.x, question.rect.y, WHITE);
+
 	DrawText(question.text, question.rect.x + paddingX, question.rect.y + paddingY, 20, WHITE);
 
 	// Draw option rectangles and text
 	for (int i = 0; i < MAX_OPTIONS; i++) {
-		DrawRectangleRec(options[i].rect, LIGHTGRAY);
+		// DrawRectangleRec(options[i].rect, LIGHTGRAY);
+		DrawTexture(optionsBgTex, options[i].rect.x, options[i].rect.y, WHITE);
 		DrawText(options[i].text, options[i].rect.x, options[i].rect.y, 20, BLACK);
 	}
 };
