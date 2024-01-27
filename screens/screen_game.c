@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <math.h>
 #include <raylib.h>
-#include <stdint.h>
 #include <raymath.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #define SPAWN_DELAY 0.75f
