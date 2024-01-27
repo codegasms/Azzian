@@ -57,8 +57,6 @@ void InitGameScreen(void) {
 	assert(playerSpriteWidth == 16 * 4 && playerSpriteHeight == 16 * 4);
 
 	// Initialize player position
-	// playerPosition.x = -playerSpriteWidth / 2.0f;
-	// playerPosition.y = -playerSpriteHeight / 2.0f;
 	playerPosition.x = 0.0f;
 	playerPosition.y = 0.0f;
 
@@ -93,14 +91,11 @@ void UpdateGameScreen(void) {
 			currentFrame = 0;
 
 		if (face == FACE_LEFT || face == FACE_RIGHT) {
-			frameRec.x =
-				currentFrame * player.width / 10.0f + player.width / 10.0f * 8;
+			frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 8;
 		} else if (face == FACE_UP) {
-			frameRec.x =
-				currentFrame * player.width / 10.0f + player.width / 10.0f * 6;
+			frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 6;
 		} else if (face == FACE_DOWN) {
-			frameRec.x =
-				currentFrame * player.width / 10.0f + player.width / 10.0f * 4;
+			frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 4;
 		}
 	}
 
@@ -140,11 +135,9 @@ void UpdateGameScreen(void) {
 	// Update the camera
 	camera.offset = (Vector2){WIDTH / 2.0f, HEIGHT / 2.0f};
 
-	camera.target =
-		(Vector2){// .x = playerPosition.x - (float)WIDTH / 2 + (float)player.width / 20 */ ,
-	              // .y = playerPosition.y - (float)HEIGHT / 2 + (float)player.height / 40 */};
-	              .x = playerPosition.x + playerSpriteWidth / 2.0f,
-	              .y = playerPosition.y + playerSpriteHeight / 2.0f};
+	camera.target = (Vector2){
+		.x = playerPosition.x + playerSpriteWidth / 2.0f,
+		.y = playerPosition.y + playerSpriteHeight / 2.0f};
 }
 
 int CellIdx(int x, int size) {
@@ -169,74 +162,163 @@ double rng_f64(uint64_t seed) {
 	return (double)gen / uint64_t_max;
 }
 
-void SpawnObstacles(void) {
+int gTerrain[100 * 100];
+int gObstacles[100 * 100];
+
+int idx(int i, int j, int n) {
+	return i * n + j;
+}
+
+void DrawTerrain(void) {
 	int playerX = CellIdx(playerPosition.x, playerSpriteWidth);
 	int playerY = CellIdx(playerPosition.y, playerSpriteHeight);
 
 	int rows = 4 + HEIGHT / playerSpriteHeight;
 	int cols = 4 + WIDTH / playerSpriteWidth;
 
+	int x1 = playerX - cols / 2;
+	int y1 = playerY - rows / 2;
+
+	Image noiseImage = GenImagePerlinNoise(cols, rows, x1, y1, 20.0f);
+	Color* colors = LoadImageColors(noiseImage);
+	UnloadImage(noiseImage);
+
 	for (int i = 0; i < rows; ++i) {
 		for (int j = 0; j < cols; ++j) {
-			/*
-			int x = playerPosition.x, y = playerPosition.y;
+			Color color = colors[i * cols + j];
+			assert(color.r == color.g && color.r == color.b && color.a == 255);
+			int intensity = color.r;
 
-			x = x - (x % playerSpriteWidth)  + (j - cols / 2.0f) * playerSpriteWidth;
-			y = y - (y % playerSpriteHeight) + (i - rows / 2.0f) * playerSpriteHeight;
-			*/
-			int x = (playerX + j - cols / 2);
-			int y = (playerY + i - rows / 2);
+			int y = y1 + i;
+			int x = x1 + j;
+			int si = 0, sj = 0;
 
-			Rectangle grassRect =
-				{.x = 16 * 4 * 0, .y = 16 * 4 * 0, .width = 16 * 4, .height = 16 * 4};
+			// clang-format off
+			if (intensity < 50) {
+				si = 10;
+				sj = 5;
+				gTerrain[idx(i, j, cols)] = 0;
+			} else if (intensity < 150) {
+				si = 6;
+				sj = 2;
+				gTerrain[idx(i, j, cols)] = 1;
+			} else if (intensity < 200) {
+				si = 7;
+				sj = 3;
+				gTerrain[idx(i, j, cols)] = 2;
+			} else {
+				si = 6;
+				sj = 3;
+				gTerrain[idx(i, j, cols)] = 3;
+			}
+			// clang-format on
+
+			Rectangle terrainRect =
+				{.x = 16 * 4 * sj, .y = 16 * 4 * si, .width = 16 * 4, .height = 16 * 4};
 			DrawTextureRec(
 				grassland,
-				grassRect,
+				terrainRect,
 				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
 				WHITE);
-
-			uint64_t seed = ((uint64_t)x << 31) * (x ^ ~y);
-			if (rng_f64(seed) <= 0.02) {
-				uint64_t seed = ((uint64_t)~x << 31) * (~x ^ ~y);
-				int type = rng_u64(rng_u64(seed)) % 7;
-				// Rectangle trunkRect = {.x = 16 * 4 * 11, .y = 16 * 4 * 12, .width = 16 * 4,
-				// .height = 16 * 4};
-				Rectangle trunkRect =
-					{.x = 16 * 4 * (7 + type), .y = 16 * 4 * 12, .width = 16 * 4, .height = 16 * 4};
-				DrawTextureRec(
-					grassland,
-					trunkRect,
-					(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
-					WHITE);
-			}
 		}
 	}
 
-	/*
+	UnloadImageColors(colors);
+}
 
-	Image noiseImage = GenImagePerlinNoise(50, 50, 0, 0, 5.0f);
-	Texture2D noiseTexture = LoadTextureFromImage(noiseImage);
-	DrawTexture(noiseTexture, 0, 0, WHITE);
-	*/
+/// Returns a non-negative int on obstacle, and -1 for no obstacle.
+int ObstacleAt(int x, int y) {
+	static const double OBSTACLE_PROBABILITY = 0.02;
+	uint64_t seed = ((uint64_t)x << 31) * (x ^ ~y);
+
+	if (rng_f64(seed) >= OBSTACLE_PROBABILITY) {
+		return -1;
+	}
+
+	seed = ((uint64_t)~x << 31) * (~x ^ ~y);
+	int obstacleType = rng_u64(seed) % 4;
+	return obstacleType;
+}
+
+void DrawObstacles(void) {
+	int playerX = CellIdx(playerPosition.x, playerSpriteWidth);
+	int playerY = CellIdx(playerPosition.y, playerSpriteHeight);
+
+	int rows = 4 + HEIGHT / playerSpriteHeight;
+	int cols = 4 + WIDTH / playerSpriteWidth;
+
+	int x1 = playerX - cols / 2;
+	int y1 = playerY - rows / 2;
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int x = x1 + j;
+			int y = y1 + i;
+
+			int terrainType = gTerrain[idx(i, j, cols)];
+			int obstacleType = ObstacleAt(x, y);
+
+			if (terrainType == 0 || obstacleType < 0) {
+				gObstacles[idx(i, j, cols)] = -1;
+				continue;
+			}
+
+			int oi = 0, oj = 0;
+			assert(terrainType >= 0 && terrainType < 4);
+
+			gObstacles[idx(i, j, cols)] = terrainType * 4 + obstacleType;
+
+			// clang-format off
+			switch (terrainType) {
+				default:
+				case 1: {
+					switch (obstacleType) {
+						default:
+						case 0: oi = 12; oj =  6; break;
+						case 1: oi = 12; oj = 15; break;
+						case 2: oi = 11; oj = 12; break;
+						case 3: oi = 11; oj = 13; break;
+					}
+					break;
+				}
+				case 2:
+					switch (obstacleType) {
+						default:
+						case 0: oi = 12; oj = 10; break;
+						case 1: oi = 12; oj = 11; break;
+						case 2: oi = 12; oj = 12; break;
+						case 3: oi = 13; oj = 24; break;
+					}
+					break;
+				case 3: {
+					switch (obstacleType) {
+						default:
+						case 0: oi = 13; oj = 2; break;
+						case 1: oi = 13; oj = 3; break;
+						case 2: oi = 13; oj = 5; break;
+						case 3: oi = 13; oj = 6; break;
+					}
+					break;
+				}
+			}
+			// clang-format on
+
+			Rectangle obstacleRect =
+				{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
+			DrawTextureRec(
+				grassland,
+				obstacleRect,
+				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+				WHITE);
+		}
+	}
 }
 
 void DrawGameScreen(void) {
 	BeginMode2D(camera);
 
-	/*
-	// Draw 9 background tiles from the center tile.
-	for (int i = -1; i < 2; i++) {
-	    for (int j = -1; j < 2; j++) {
-	        DrawTexture(
-	            background,
-	            (centerTile.x * WIDTH - (WIDTH / 2.0f)) + (WIDTH * i),
-	            (centerTile.y * HEIGHT - (HEIGHT / 2.0f)) + (HEIGHT * j),
-	            WHITE);
-	    }
-	}
-	*/
-
-	SpawnObstacles();
+	DrawTerrain();
+	DrawObstacles();
 
 	if (face == FACE_LEFT) {
 		// frameRec.width = -frameRec.width;
@@ -265,15 +347,15 @@ void UnloadGameScreen(void) {
 	UnloadTexture(player);
 };
 
-// This function returns whether the game should end or not. No logic
-// implemented as of yet.
+// This function returns whether the game should end or not.
+// No logic implemented as of yet.
 int FinishGameScreen(void) {
 	return finishScreen;
 };
 
 // Returns relative tile location from the center of the screen.
-// The center tile is 0,0 and the tile left of it is -1, 0 (Assuming that the
-// background is the same size as the screen).
+// The center tile is 0,0 and the tile left of it is -1, 0
+// (Assuming that the background is the same size as the screen).
 Vector2 GetCenterTileLocation() {
 	float x = (playerPosition.x + WIDTH / 2.0f) / WIDTH;
 	float y = (playerPosition.y + HEIGHT / 2.0f) / HEIGHT;
