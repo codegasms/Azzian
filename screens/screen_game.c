@@ -7,13 +7,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define SPAWN_DELAY 0.75f
+#define MAX_LIVES 20
 
 static Vector2 playerPosition = {0};
-static Vector2 centerTile = {0, 0};
 static Texture2D background = {0};
 static Texture2D player = {0};
-Texture2D chappalTexture = {0};
+static Texture2D chappalTexture = {0};
+static Texture2D heart = {0};
 static Camera2D camera = {0};
 Texture2D grassland = {0};
 
@@ -30,8 +30,8 @@ static int WIDTH;
 static int HEIGHT;
 
 static int finishScreen = 0;
-static int lives = 5;
-const bool debug = true;
+static int lives;
+const bool debug = false;
 
 int face = 0;
 
@@ -55,17 +55,24 @@ typedef struct ChappalList {
 
 static ChappalList* chappalList;
 
+// Function declarations
+void UpdateTerrain(void);
+void UpdateObstacles(void);
+int CellIdx(int x, int size);
+void SetCellsState(void);
+int idx(int i, int j, int n);
+
 void InitGameScreen(void) {
 	finishScreen = 0;
-	lives = 10;
+	lives = MAX_LIVES;
 
 	// Initialize player position
 	playerPosition.x = 0.0f;
 	playerPosition.y = 0.0f;
 
 	playerRec = (Rectangle){
-		playerPosition.x - (float)player.width / 20,
-		playerPosition.y - (float)player.height / 40,
+		playerPosition.x,
+		playerPosition.y,
 		(float)player.width / 10,
 		(float)player.height / 20};
 
@@ -76,13 +83,13 @@ void InitGameScreen(void) {
 	// chappal = CreateChappal(chappalTexture, playerPosition);
 	// End Testing
 
-	// Initialize the center tile location. This is used for mapping the 9
-	// background tiles.
-	centerTile.x = 0;
-	centerTile.y = 0;
-
 	// Loading Textures
 	background = LoadTexture("resources/background.png");
+
+	Image heart_image = LoadImage("resources/life.png");
+	ImageResizeNN(&heart_image, heart_image.width * 2, heart_image.height * 2);
+	heart = LoadTextureFromImage(heart_image);
+	UnloadImage(heart_image);
 
 	Image image = LoadImage("resources/char.png");
 	ImageResizeNN(&image, image.width * 4, image.height * 4);
@@ -127,7 +134,11 @@ Node* createNode(Chappal* chappal) {
 }
 
 void SpawnChappal() {
-	Chappal* chappal = CreateChappal(chappalTexture, playerPosition);
+	Chappal* chappal = CreateChappal(
+		chappalTexture,
+		(Vector2){
+			playerPosition.x + playerSpriteWidth / 2.0f,
+			playerPosition.y + playerSpriteHeight / 2.0f});
 	Node* node = createNode(chappal);
 	if (chappalList->head == NULL) {
 		chappalList->head = node;
@@ -141,7 +152,7 @@ void SpawnChappal() {
 	}
 }
 
-void DeleteChappal(Node* node) {
+void DeleteChappalNode(Node* node) {
 	if (node->prev == NULL) {
 		chappalList->head = node->next;
 	} else {
@@ -154,10 +165,14 @@ void DeleteChappal(Node* node) {
 	free(node);
 }
 
-Vector2 GetCenterTileLocation();
+void SimulateUpdate() {}
+
+int gStartX = 0, gStartY = 0;
+int gRows = 0, gCols = 0;
+int gTerrain[100 * 100];
+int gObstacles[100 * 100];
 
 void UpdateGameScreen(void) {
-
 	framesCounter++;
 
 	if (framesCounter >= (60 / framesSpeed)) {
@@ -199,29 +214,53 @@ void UpdateGameScreen(void) {
 		face = FACE_DOWN;
 	}
 
+	int moveX = 0, moveY = 0;
+
 	if (deltaX != 0 && deltaY != 0) {
 		const int diagMoveSize = sqrt((moveSize * moveSize) / 2.0);
-		playerPosition.x += deltaX * diagMoveSize;
-		playerPosition.y += deltaY * diagMoveSize;
+		moveX = deltaX * diagMoveSize;
+		moveY = deltaY * diagMoveSize;
 	} else {
-		playerPosition.x += deltaX * moveSize;
-		playerPosition.y += deltaY * moveSize;
+		moveX = deltaX * moveSize;
+		moveY = deltaY * moveSize;
 	}
 
-	// Update the center tile
-	centerTile = GetCenterTileLocation();
+	SetCellsState();
+	UpdateTerrain();
+	UpdateObstacles();
+
+	{
+		int cx = playerPosition.x + playerSpriteWidth / 2.0f;
+		int cy = playerPosition.y + playerSpriteHeight / 2.0f;
+
+		bool collision = false;
+		for (int i = 4; i >= 1; --i) {
+			int nx = CellIdx(cx + (float)moveX / i, playerSpriteWidth);
+			int ny = CellIdx(cy + (float)moveY / i, playerSpriteHeight);
+
+			if (gObstacles[idx(ny - gStartY, nx - gStartX, gCols)] != -1) {
+				collision = true;
+				break;
+			}
+		}
+
+		if (!collision) {
+			playerPosition.x += moveX;
+			playerPosition.y += moveY;
+		}
+	}
+
 	// Update the camera
 	camera.offset = (Vector2){WIDTH / 2.0f, HEIGHT / 2.0f};
-
 	camera.target = (Vector2){
 		.x = playerPosition.x + playerSpriteWidth / 2.0f,
 		.y = playerPosition.y + playerSpriteHeight / 2.0f};
 
 	playerRec = (Rectangle){
-		playerPosition.x - (float)player.width / 20,
-		playerPosition.y - (float)player.height / 40,
-		(float)player.width / 10,
-		(float)player.height / 20};
+		playerPosition.x - player.width / 20.0f,
+		playerPosition.y - player.height / 40.0f,
+		player.width / 10.0f,
+		player.height / 20.0f};
 
 	// Draw chappals
 	Node* node = chappalList->head;
@@ -233,18 +272,18 @@ void UpdateGameScreen(void) {
 			lives--;
 			Node* temp = node;
 			node = node->next;
-			DeleteChappal(temp);
+			DeleteChappalNode(temp);
 			if (lives == 0) {
 				finishScreen = 1;
 			}
 		}
-		if (node->chappal->position.x < playerPosition.x - (WIDTH / 2) - SPAWN_OFFSET ||
-		    node->chappal->position.x > playerPosition.x + (WIDTH / 2) + SPAWN_OFFSET ||
-		    node->chappal->position.y < playerPosition.y - (HEIGHT / 2) - SPAWN_OFFSET ||
-		    node->chappal->position.y > playerPosition.y + (HEIGHT / 2) + SPAWN_OFFSET) {
+		if (node->chappal->position.x < playerPosition.x - (WIDTH / 2.0f) - SPAWN_OFFSET ||
+		    node->chappal->position.x > playerPosition.x + (WIDTH / 2.0f) + SPAWN_OFFSET ||
+		    node->chappal->position.y < playerPosition.y - (HEIGHT / 2.0f) - SPAWN_OFFSET ||
+		    node->chappal->position.y > playerPosition.y + (HEIGHT / 2.0f) + SPAWN_OFFSET) {
 			Node* temp = node;
 			node = node->next;
-			DeleteChappal(temp);
+			DeleteChappalNode(temp);
 		} else {
 			node = node->next;
 		}
@@ -273,22 +312,26 @@ double rng_f64(uint64_t seed) {
 	return (double)gen / uint64_t_max;
 }
 
-int gTerrain[100 * 100];
-int gObstacles[100 * 100];
-
 int idx(int i, int j, int n) {
 	return i * n + j;
 }
 
-void DrawTerrain(void) {
+void SetCellsState(void) {
 	int playerX = CellIdx(playerPosition.x, playerSpriteWidth);
 	int playerY = CellIdx(playerPosition.y, playerSpriteHeight);
 
-	int rows = 4 + HEIGHT / playerSpriteHeight;
-	int cols = 4 + WIDTH / playerSpriteWidth;
+	int rows = 10 + HEIGHT / playerSpriteHeight;
+	int cols = 10 + WIDTH / playerSpriteWidth;
 
-	int x1 = playerX - cols / 2;
-	int y1 = playerY - rows / 2;
+	gStartX = playerX - cols / 2;
+	gStartY = playerY - rows / 2;
+	gRows = rows;
+	gCols = cols;
+}
+
+void UpdateTerrain(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
 
 	Image noiseImage = GenImagePerlinNoise(cols, rows, x1, y1, 20.0f);
 	Color* colors = LoadImageColors(noiseImage);
@@ -300,37 +343,15 @@ void DrawTerrain(void) {
 			assert(color.r == color.g && color.r == color.b && color.a == 255);
 			int intensity = color.r;
 
-			int y = y1 + i;
-			int x = x1 + j;
-			int si = 0, sj = 0;
-
-			// clang-format off
 			if (intensity < 50) {
-				si = 10;
-				sj = 5;
 				gTerrain[idx(i, j, cols)] = 0;
 			} else if (intensity < 150) {
-				si = 6;
-				sj = 2;
 				gTerrain[idx(i, j, cols)] = 1;
 			} else if (intensity < 200) {
-				si = 7;
-				sj = 3;
 				gTerrain[idx(i, j, cols)] = 2;
 			} else {
-				si = 6;
-				sj = 3;
 				gTerrain[idx(i, j, cols)] = 3;
 			}
-			// clang-format on
-
-			Rectangle terrainRect =
-				{.x = 16 * 4 * sj, .y = 16 * 4 * si, .width = 16 * 4, .height = 16 * 4};
-			DrawTextureRec(
-				grassland,
-				terrainRect,
-				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
-				WHITE);
 		}
 	}
 
@@ -351,15 +372,9 @@ int ObstacleAt(int x, int y) {
 	return obstacleType;
 }
 
-void DrawObstacles(void) {
-	int playerX = CellIdx(playerPosition.x, playerSpriteWidth);
-	int playerY = CellIdx(playerPosition.y, playerSpriteHeight);
-
-	int rows = 4 + HEIGHT / playerSpriteHeight;
-	int cols = 4 + WIDTH / playerSpriteWidth;
-
-	int x1 = playerX - cols / 2;
-	int y1 = playerY - rows / 2;
+void UpdateObstacles(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
 
 	for (int i = 0; i < rows; ++i) {
 		for (int j = 0; j < cols; ++j) {
@@ -374,10 +389,58 @@ void DrawObstacles(void) {
 				continue;
 			}
 
-			int oi = 0, oj = 0;
 			assert(terrainType >= 0 && terrainType < 4);
+			gObstacles[idx(i, j, cols)] = obstacleType;
+		}
+	}
+}
 
-			gObstacles[idx(i, j, cols)] = terrainType * 4 + obstacleType;
+void DrawTerrain(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int y = y1 + i;
+			int x = x1 + j;
+			int si = 0, sj = 0;
+
+			// clang-format off
+			switch(gTerrain[idx(i, j, cols)]) {
+				case 0: si = 10; sj =  5; break;
+				case 1: si =  6; sj =  2; break;
+				case 2: si =  7; sj =  3; break;
+				case 3: si =  6; sj =  3; break;
+			}
+			// clang-format on
+
+			Rectangle terrainRect =
+				{.x = 16 * 4 * sj, .y = 16 * 4 * si, .width = 16 * 4, .height = 16 * 4};
+			DrawTextureRec(
+				grassland,
+				terrainRect,
+				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+				WHITE);
+		}
+	}
+}
+
+void DrawObstacles(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int x = x1 + j;
+			int y = y1 + i;
+
+			int obstacleType = gObstacles[idx(i, j, cols)];
+			if (obstacleType < 0) {
+				continue;
+			}
+
+			int terrainType = gTerrain[idx(i, j, cols)];
+			int oi = 0, oj = 0;
 
 			// clang-format off
 			switch (terrainType) {
@@ -432,7 +495,6 @@ void DrawGameScreen(void) {
 	DrawObstacles();
 
 	if (face == FACE_LEFT) {
-		// frameRec.width = -frameRec.width;
 		DrawTextureRec(
 			player,
 			(Rectangle){frameRec.x, frameRec.y, -frameRec.width, frameRec.height},
@@ -455,18 +517,37 @@ void DrawGameScreen(void) {
 		node = node->next;
 		counter++;
 	}
-	DrawText(
-		TextFormat("Lives: %d", lives),
-		playerPosition.x - 600,
-		playerPosition.y - 270,
-		20,
-		BLACK);
+
+	// _Static_assert(MAX_LIVES % 4 == 0, "MAX_LIVES must be a multiple of 4");
+	const int HEARTS = (MAX_LIVES + 3) / 4;
+	for (int i = 0; i < HEARTS; ++i) {
+		int rem = lives - i * 4;
+		if (rem < 0) {
+			rem = 0;
+		}
+
+		if (rem > 4)
+			rem = 4;
+		DrawTextureRec(
+			heart,
+			(Rectangle){17 * 2 * (4 - rem), 0, 17 * 2, 17 * 2},
+			(Vector2){playerPosition.x - 600 + (17 * 2 * i), playerPosition.y - 300},
+			WHITE);
+	}
+
 	// Testing
 	if (debug) {
+		DrawRectangleRec(playerRec, RED);
+		DrawText(
+			TextFormat("Lives: %d", lives),
+			playerPosition.x - 600,
+			playerPosition.y - 250,
+			20,
+			BLACK);
 		DrawText(
 			TextFormat("Chappals: %d", counter),
 			playerPosition.x - 600,
-			playerPosition.y - 300,
+			playerPosition.y - 220,
 			20,
 			BLACK);
 	}
@@ -484,8 +565,9 @@ void UnloadGameScreen(void) {
 	while (node != NULL) {
 		Node* temp = node;
 		node = node->next;
-		DeleteChappal(temp);
+		DeleteChappalNode(temp);
 	}
+	UnloadTexture(heart);
 	UnloadTexture(background);
 	UnloadTexture(player);
 };
@@ -495,12 +577,3 @@ void UnloadGameScreen(void) {
 int FinishGameScreen(void) {
 	return finishScreen;
 };
-
-// Returns relative tile location from the center of the screen.
-// The center tile is 0,0 and the tile left of it is -1, 0
-// (Assuming that the background is the same size as the screen).
-Vector2 GetCenterTileLocation() {
-	float x = (playerPosition.x + WIDTH / 2.0f) / WIDTH;
-	float y = (playerPosition.y + HEIGHT / 2.0f) / HEIGHT;
-	return (Vector2){x < 0 ? (int)(x - 1) : (int)(x), y < 0 ? (int)(y - 1) : (int)(y)};
-}

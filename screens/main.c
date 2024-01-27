@@ -6,7 +6,6 @@
 GameScreen currentScreen = TITLE;
 
 void UpdateDrawFrame(void);
-Vector2 GetCenterTileLocation();
 
 static bool quitGame = false;
 
