@@ -26,6 +26,7 @@ $(TARGET): $(OBJS)
 
 # Compile source files
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
+	mkdir -p $(BIN_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean build artifacts
