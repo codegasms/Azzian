@@ -55,7 +55,7 @@ static bool pressed_2;
 static int btnState_1;
 static int btnState_2;
 
-const bool debug = true;
+const bool debug = false;
 
 int face = 0;
 
