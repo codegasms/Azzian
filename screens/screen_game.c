@@ -5,6 +5,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define MAX_LIVES 20
@@ -14,11 +15,25 @@ static Texture2D background = {0};
 static Texture2D player = {0};
 static Texture2D chappalTexture = {0};
 static Texture2D heart = {0};
+static Texture2D menuScreen = {0};
+static Texture2D gamePaused = {0};
+static Texture2D button1 = {0};
+static Texture2D button2 = {0};
+static Texture2D button3 = {0};
+static Texture2D button4 = {0};
+static Texture2D button5 = {0};
+static Texture2D scoreBoard = {0};
+static Texture2D button6 = {0};
+static Texture2D button = {0};
 static Camera2D camera = {0};
 Texture2D grassland = {0};
 
 Rectangle frameRec = {0};
 Rectangle playerRec = {0};
+
+Rectangle pauseBtn1Rec = {0};
+Rectangle pauseBtn2Rec = {0};
+
 int currentFrame = 0;
 int framesCounter = 0;
 int framesSpeed = 0;
@@ -31,7 +46,16 @@ static int HEIGHT;
 
 static int finishScreen = 0;
 static int lives;
-const bool debug = false;
+
+static int score;
+
+static bool paused = false;
+static bool pressed_1;
+static bool pressed_2;
+static int btnState_1;
+static int btnState_2;
+
+const bool debug = true;
 
 int face = 0;
 
@@ -64,6 +88,11 @@ int idx(int i, int j, int n);
 
 void InitGameScreen(void) {
 	finishScreen = 0;
+	score = 0;
+	pressed_1 = false;
+	pressed_2 = false;
+	btnState_1 = 0;
+	btnState_1 = 0;
 	lives = MAX_LIVES;
 
 	// Initialize player position
@@ -85,6 +114,59 @@ void InitGameScreen(void) {
 
 	// Loading Textures
 	background = LoadTexture("resources/background.png");
+
+	Image menuImage = LoadImage("resources/Sprites/UI_Flat_Frame_01_Standard.png");
+	ImageResizeNN(&menuImage, menuImage.width * 8, menuImage.height * 6);
+	menuScreen = LoadTextureFromImage(menuImage);
+	UnloadImage(menuImage);
+
+	gamePaused = LoadTexture("resources/game_paused.png");
+
+	Image buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a1.png");
+	ImageResizeNN(&buttonImage, buttonImage.width * 2, buttonImage.height * 2);
+	button = LoadTextureFromImage(buttonImage);
+	UnloadImage(buttonImage);
+
+	buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a1.png");
+	ImageResizeNN(&buttonImage, buttonImage.width * 2, buttonImage.height * 2);
+	ImageDrawText(&buttonImage, "Resume", 55, 15, 20, BLACK);
+	button1 = LoadTextureFromImage(buttonImage);
+	UnloadImage(buttonImage);
+
+	buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a2.png");
+	ImageResizeNN(&buttonImage, buttonImage.width * 2, buttonImage.height * 2);
+	ImageDrawText(&buttonImage, "Resume", 55, 20, 20, BLACK);
+	button2 = LoadTextureFromImage(buttonImage);
+	UnloadImage(buttonImage);
+
+	buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a3.png");
+	ImageResizeNN(&buttonImage, buttonImage.width * 2, buttonImage.height * 2);
+	ImageDrawText(&buttonImage, "Resume", 55, 25, 20, BLACK);
+	button3 = LoadTextureFromImage(buttonImage);
+	UnloadImage(buttonImage);
+
+	buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a1.png");
+	ImageResizeNN(&buttonImage, buttonImage.width * 2, buttonImage.height * 2);
+	ImageDrawText(&buttonImage, "Title", 70, 15, 20, BLACK);
+	button4 = LoadTextureFromImage(buttonImage);
+	UnloadImage(buttonImage);
+
+	buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a2.png");
+	ImageResizeNN(&buttonImage, buttonImage.width * 2, buttonImage.height * 2);
+	ImageDrawText(&buttonImage, "Title", 70, 20, 20, BLACK);
+	button5 = LoadTextureFromImage(buttonImage);
+	UnloadImage(buttonImage);
+
+	buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a3.png");
+	ImageResizeNN(&buttonImage, buttonImage.width * 2, buttonImage.height * 2);
+	ImageDrawText(&buttonImage, "Title", 70, 25, 20, BLACK);
+	button6 = LoadTextureFromImage(buttonImage);
+	UnloadImage(buttonImage);
+
+	Image scoreImage = LoadImage("resources/Sprites/UI_Flat_Banner_02_Downward.png");
+	ImageResizeNN(&scoreImage, scoreImage.width * 2.5, scoreImage.height * 2.5);
+	scoreBoard = LoadTextureFromImage(scoreImage);
+	UnloadImage(scoreImage);
 
 	Image heart_image = LoadImage("resources/life.png");
 	ImageResizeNN(&heart_image, heart_image.width * 2, heart_image.height * 2);
@@ -116,6 +198,11 @@ void InitGameScreen(void) {
 		17.0 * (float)player.height / 20,
 		(float)player.width / 10,
 		(float)player.height / 20};
+
+	// Dummy code
+	pauseBtn1Rec = (Rectangle){playerPosition.x, playerPosition.y, button.width, button.height};
+	pauseBtn2Rec =
+		(Rectangle){playerPosition.x, playerPosition.y + 50, button.width, button.height};
 
 	currentFrame = 0;
 	framesCounter = 0;
@@ -173,119 +260,183 @@ int gTerrain[100 * 100];
 int gObstacles[100 * 100];
 
 void UpdateGameScreen(void) {
-	framesCounter++;
+	if (IsKeyPressed(KEY_SPACE)) {
+		paused = !paused;
+		pauseBtn1Rec = (Rectangle){
+			playerPosition.x + (playerSpriteWidth / 2.0f) - 3 * button.width / 2,
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (button.height / 2.0f) + 150,
+			button.width,
+			button.height};
+		pauseBtn2Rec = (Rectangle){
+			playerPosition.x + (playerSpriteWidth / 2.0f) + button.width / 2,
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (button.height / 2.0f) + 150,
+			button.width,
+			button.height};
+	}
 
-	if (framesCounter >= (60 / framesSpeed)) {
-		SpawnChappal();
-		framesCounter = 0;
-		currentFrame++;
+	if (paused) {
+		Vector2 mousePoint = GetMousePosition();
 
-		if (currentFrame > 1)
-			currentFrame = 0;
-
-		if (face == FACE_LEFT || face == FACE_RIGHT) {
-			frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 8;
-		} else if (face == FACE_UP) {
-			frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 6;
-		} else if (face == FACE_DOWN) {
-			frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 4;
+		if (debug) {
+			printf("x: %f; y:%f\n", mousePoint.x, mousePoint.y);
 		}
-	}
 
-	face = FACE_IDLE;
-
-	int deltaX = 0, deltaY = 0;
-	static const int moveSize = 10;
-
-	if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-		deltaX -= 1;
-		face = FACE_LEFT;
-	}
-	if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-		deltaX += 1;
-		face = FACE_RIGHT;
-	}
-	if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
-		deltaY -= 1;
-		face = FACE_UP;
-	}
-	if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
-		deltaY += 1;
-		face = FACE_DOWN;
-	}
-
-	int moveX = 0, moveY = 0;
-
-	if (deltaX != 0 && deltaY != 0) {
-		const int diagMoveSize = sqrt((moveSize * moveSize) / 2.0);
-		moveX = deltaX * diagMoveSize;
-		moveY = deltaY * diagMoveSize;
-	} else {
-		moveX = deltaX * moveSize;
-		moveY = deltaY * moveSize;
-	}
-
-	SetCellsState();
-	UpdateTerrain();
-	UpdateObstacles();
-
-	{
-		int cx = playerPosition.x + playerSpriteWidth / 2.0f;
-		int cy = playerPosition.y + playerSpriteHeight / 2.0f;
-
-		bool collision = false;
-		for (int i = 4; i >= 1; --i) {
-			int nx = CellIdx(cx + (float)moveX / i, playerSpriteWidth);
-			int ny = CellIdx(cy + (float)moveY / i, playerSpriteHeight);
-
-			if (gObstacles[idx(ny - gStartY, nx - gStartX, gCols)] != -1) {
-				collision = true;
-				break;
+		if (mousePoint.x >= 355 && mousePoint.x <= 540 && mousePoint.y >= 480 &&
+		    mousePoint.y <= 540) {
+			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+				btnState_1 = 2;
+			} else {
+				btnState_1 = 1;
 			}
-		}
 
-		if (!collision) {
-			playerPosition.x += moveX;
-			playerPosition.y += moveY;
-		}
-	}
-
-	// Update the camera
-	camera.offset = (Vector2){WIDTH / 2.0f, HEIGHT / 2.0f};
-	camera.target = (Vector2){
-		.x = playerPosition.x + playerSpriteWidth / 2.0f,
-		.y = playerPosition.y + playerSpriteHeight / 2.0f};
-
-	playerRec = (Rectangle){
-		playerPosition.x - player.width / 20.0f,
-		playerPosition.y - player.height / 40.0f,
-		player.width / 10.0f,
-		player.height / 20.0f};
-
-	// Draw chappals
-	Node* node = chappalList->head;
-	while (node != NULL) {
-		UpdateChappal(node->chappal);
-		Rectangle chappalRec =
-			(Rectangle){node->chappal->position.x - 10, node->chappal->position.y - 10, 20, 20};
-		if (CheckCollisionRecs(playerRec, chappalRec)) {
-			lives--;
-			Node* temp = node;
-			node = node->next;
-			DeleteChappalNode(temp);
-			if (lives == 0) {
-				finishScreen = 1;
+			if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+				pressed_1 = true;
 			}
-		}
-		if (node->chappal->position.x < playerPosition.x - (WIDTH / 2.0f) - SPAWN_OFFSET ||
-		    node->chappal->position.x > playerPosition.x + (WIDTH / 2.0f) + SPAWN_OFFSET ||
-		    node->chappal->position.y < playerPosition.y - (HEIGHT / 2.0f) - SPAWN_OFFSET ||
-		    node->chappal->position.y > playerPosition.y + (HEIGHT / 2.0f) + SPAWN_OFFSET) {
-			Node* temp = node;
-			node = node->next;
-			DeleteChappalNode(temp);
 		} else {
-			node = node->next;
+			btnState_1 = 0;
+		}
+
+		if (mousePoint.x >= 740 && mousePoint.x <= 925 && mousePoint.y >= 480 &&
+		    mousePoint.y <= 540) {
+			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+				btnState_2 = 2;
+			} else {
+				btnState_2 = 1;
+			}
+
+			if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+				pressed_2 = true;
+			}
+		} else {
+			btnState_2 = 0;
+		}
+
+		if (pressed_1) {
+			paused = false;
+			pressed_1 = false;
+		} else if (pressed_2) {
+			finishScreen = 1;
+			paused = false;
+			pressed_2 = false;
+		}
+	} else {
+		framesCounter++;
+
+		if (framesCounter >= (60 / framesSpeed)) {
+			SpawnChappal();
+			framesCounter = 0;
+			score++;
+			currentFrame++;
+
+			if (currentFrame > 1)
+				currentFrame = 0;
+
+			if (face == FACE_LEFT || face == FACE_RIGHT) {
+				frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 8;
+			} else if (face == FACE_UP) {
+				frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 6;
+			} else if (face == FACE_DOWN) {
+				frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 4;
+			}
+		}
+
+		face = FACE_IDLE;
+
+		int deltaX = 0, deltaY = 0;
+		static const int moveSize = 10;
+
+		if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
+			deltaX -= 1;
+			face = FACE_LEFT;
+		}
+		if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
+			deltaX += 1;
+			face = FACE_RIGHT;
+		}
+		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
+			deltaY -= 1;
+			face = FACE_UP;
+		}
+		if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
+			deltaY += 1;
+			face = FACE_DOWN;
+		}
+
+		int moveX = 0, moveY = 0;
+
+		if (deltaX != 0 && deltaY != 0) {
+			const int diagMoveSize = sqrt((moveSize * moveSize) / 2.0);
+			moveX = deltaX * diagMoveSize;
+			moveY = deltaY * diagMoveSize;
+		} else {
+			moveX = deltaX * moveSize;
+			moveY = deltaY * moveSize;
+		}
+
+		SetCellsState();
+		UpdateTerrain();
+		UpdateObstacles();
+
+		{
+			int cx = playerPosition.x + playerSpriteWidth / 2.0f;
+			int cy = playerPosition.y + playerSpriteHeight / 2.0f;
+
+			bool collision = false;
+			for (int i = 4; i >= 1; --i) {
+				int nx = CellIdx(cx + (float)moveX / i, playerSpriteWidth);
+				int ny = CellIdx(cy + (float)moveY / i, playerSpriteHeight);
+
+				if (gObstacles[idx(ny - gStartY, nx - gStartX, gCols)] != -1) {
+					collision = true;
+					break;
+				}
+			}
+
+			if (!collision) {
+				playerPosition.x += moveX;
+				playerPosition.y += moveY;
+			}
+		}
+
+		// Update the camera
+		camera.offset = (Vector2){WIDTH / 2.0f, HEIGHT / 2.0f};
+		camera.target = (Vector2){
+			.x = playerPosition.x + playerSpriteWidth / 2.0f,
+			.y = playerPosition.y + playerSpriteHeight / 2.0f};
+
+		playerRec = (Rectangle){
+			playerPosition.x,
+			playerPosition.y,
+			(float)player.width / 10,
+			(float)player.height / 20};
+
+		// Draw chappals
+		Node* node = chappalList->head;
+		while (node != NULL) {
+			UpdateChappal(node->chappal);
+			Rectangle chappalRec =
+				(Rectangle){node->chappal->position.x - 10, node->chappal->position.y - 10, 20, 20};
+			if (CheckCollisionRecs(playerRec, chappalRec)) {
+				lives--;
+				Node* temp = node;
+				node = node->next;
+				DeleteChappalNode(temp);
+				if (lives == 0) {
+					finishScreen = 1;
+				}
+			}
+			if (node->chappal->position.x < playerPosition.x - (WIDTH / 2) - (SPAWN_OFFSET + 100) ||
+			    node->chappal->position.x > playerPosition.x + (WIDTH / 2) + (SPAWN_OFFSET + 100) ||
+			    node->chappal->position.y <
+			        playerPosition.y - (HEIGHT / 2) - (SPAWN_OFFSET + 100) ||
+			    node->chappal->position.y >
+			        playerPosition.y + (HEIGHT / 2) + (SPAWN_OFFSET + 100)) {
+				Node* temp = node;
+				node = node->next;
+				DeleteChappalNode(temp);
+			} else {
+				node = node->next;
+			}
 		}
 	}
 }
@@ -534,6 +685,52 @@ void DrawGameScreen(void) {
 			(Vector2){playerPosition.x - 600 + (17 * 2 * i), playerPosition.y - 300},
 			WHITE);
 	}
+	DrawTexture(scoreBoard, playerPosition.x - 625, playerPosition.y - 255, WHITE);
+	DrawText(
+		TextFormat("Score: %d", score),
+		playerPosition.x - 550,
+		playerPosition.y - 225,
+		20,
+		BLACK);
+	DrawFPS(playerPosition.x - WIDTH / 2.0f + 40, playerPosition.y - HEIGHT / 2.0f + 40);
+
+	if (paused) {
+		// Draw fade background.
+		DrawRectangle(
+			playerPosition.x - (WIDTH / 2.0f) + (playerSpriteWidth / 2.0f),
+			playerPosition.y - (HEIGHT / 2.0f) + (playerSpriteHeight / 2.0f),
+			WIDTH,
+			HEIGHT,
+			ColorAlpha(BLACK, 0.3));
+		// Draw blue board
+		DrawTexture(
+			menuScreen,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2),
+			WHITE);
+		// Draw game paused text
+		DrawTexture(
+			gamePaused,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (gamePaused.width / 2),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (gamePaused.height / 2) - 200,
+			WHITE);
+
+		if (btnState_1 == 0) {
+			DrawTexture(button1, pauseBtn1Rec.x, pauseBtn1Rec.y, WHITE);
+		} else if (btnState_1 == 1) {
+			DrawTexture(button2, pauseBtn1Rec.x, pauseBtn1Rec.y, WHITE);
+		} else if (btnState_1 == 2) {
+			DrawTexture(button3, pauseBtn1Rec.x, pauseBtn1Rec.y, WHITE);
+		}
+		// DrawRectangleRec(pauseBtn1Rec, RED);
+		if (btnState_2 == 0) {
+			DrawTexture(button4, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
+		} else if (btnState_2 == 1) {
+			DrawTexture(button5, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
+		} else if (btnState_2 == 2) {
+			DrawTexture(button6, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
+		}
+	}
 
 	// Testing
 	if (debug) {
@@ -541,19 +738,24 @@ void DrawGameScreen(void) {
 		DrawText(
 			TextFormat("Lives: %d", lives),
 			playerPosition.x - 600,
-			playerPosition.y - 250,
+			playerPosition.y,
 			20,
 			BLACK);
 		DrawText(
 			TextFormat("Chappals: %d", counter),
 			playerPosition.x - 600,
-			playerPosition.y - 220,
+			playerPosition.y + 30,
+			20,
+			BLACK);
+		DrawText(
+			TextFormat("Score: %d", score),
+			playerPosition.x - 600,
+			playerPosition.y + 60,
 			20,
 			BLACK);
 	}
 	// End Testing
 
-	DrawFPS(playerPosition.x - WIDTH / 2.0f + 40, playerPosition.y - HEIGHT / 2.0f + 40);
 	EndMode2D();
 };
 
@@ -568,7 +770,16 @@ void UnloadGameScreen(void) {
 		DeleteChappalNode(temp);
 	}
 	UnloadTexture(heart);
+	UnloadTexture(menuScreen);
+	UnloadTexture(gamePaused);
 	UnloadTexture(background);
+	UnloadTexture(button1);
+	UnloadTexture(button2);
+	UnloadTexture(button3);
+	UnloadTexture(button4);
+	UnloadTexture(button5);
+	UnloadTexture(button6);
+	UnloadTexture(button);
 	UnloadTexture(player);
 };
 
