@@ -102,8 +102,8 @@ void InitGameScreen(void) {
 	playerRec = (Rectangle){
 		playerPosition.x,
 		playerPosition.y,
-		(float)player.width / 10,
-		(float)player.height / 20};
+		player.width / 10.0f,
+		player.height / 20.0f};
 
 	// Testing
 	chappalTexture = LoadTexture("resources/book.png");
@@ -194,10 +194,10 @@ void InitGameScreen(void) {
 	HEIGHT = GetScreenHeight();
 
 	frameRec = (Rectangle){
-		(float)player.width / 10,
-		17.0 * (float)player.height / 20,
-		(float)player.width / 10,
-		(float)player.height / 20};
+		player.width / 10.0f,
+		17.0 * player.height / 20.0f,
+		player.width / 10.0f,
+		player.height / 20.0f};
 
 	// Dummy code
 	pauseBtn1Rec = (Rectangle){playerPosition.x, playerPosition.y, button.width, button.height};
@@ -407,8 +407,8 @@ void UpdateGameScreen(void) {
 		playerRec = (Rectangle){
 			playerPosition.x,
 			playerPosition.y,
-			(float)player.width / 10,
-			(float)player.height / 20};
+			player.width / 10.0f,
+			player.height / 20.0f};
 
 		// Draw chappals
 		Node* node = chappalList->head;
