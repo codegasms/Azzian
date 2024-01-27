@@ -10,6 +10,7 @@
 
 #define MAX_LIVES 20
 
+static double OBSTACLE_PROBABILITY = 0.02;
 static Vector2 playerPosition = {0};
 static Texture2D background = {0};
 static Texture2D player = {0};
@@ -27,6 +28,9 @@ static Texture2D button6 = {0};
 static Texture2D button = {0};
 static Camera2D camera = {0};
 Texture2D grassland = {0};
+Texture2D household = {0};
+
+int gGameLevel = 1;
 
 Rectangle frameRec = {0};
 Rectangle playerRec = {0};
@@ -82,6 +86,14 @@ static ChappalList* chappalList;
 // Function declarations
 void UpdateTerrain(void);
 void UpdateObstacles(void);
+void DrawTerrain(void);
+void DrawObstacles(void);
+
+void UpdateTerrainHome(void);
+void UpdateObstaclesHome(void);
+void DrawTerrainHome(void);
+void DrawObstaclesHome(void);
+
 int CellIdx(int x, int size);
 void SetCellsState(void);
 int idx(int i, int j, int n);
@@ -181,6 +193,10 @@ void InitGameScreen(void) {
 	ImageResizeNN(&grasslandImage, grasslandImage.width * 4, grasslandImage.height * 4);
 	grassland = LoadTextureFromImage(grasslandImage);
 
+	Image householdImage = LoadImage("resources/household.png");
+	ImageResizeNN(&householdImage, householdImage.width * 4, householdImage.height * 4);
+	household = LoadTextureFromImage(householdImage);
+
 	playerSpriteWidth = player.width / 10;
 	playerSpriteHeight = player.height / 20;
 	assert(playerSpriteWidth == 16 * 4 && playerSpriteHeight == 16 * 4);
@@ -263,12 +279,12 @@ void UpdateGameScreen(void) {
 	if (IsKeyPressed(KEY_SPACE)) {
 		paused = !paused;
 		pauseBtn1Rec = (Rectangle){
-			playerPosition.x + (playerSpriteWidth / 2.0f) - 3 * button.width / 2,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - 3 * button.width / 2.0f,
 			playerPosition.y + (playerSpriteHeight / 2.0f) - (button.height / 2.0f) + 150,
 			button.width,
 			button.height};
 		pauseBtn2Rec = (Rectangle){
-			playerPosition.x + (playerSpriteWidth / 2.0f) + button.width / 2,
+			playerPosition.x + (playerSpriteWidth / 2.0f) + button.width / 2.0f,
 			playerPosition.y + (playerSpriteHeight / 2.0f) - (button.height / 2.0f) + 150,
 			button.width,
 			button.height};
@@ -374,8 +390,13 @@ void UpdateGameScreen(void) {
 		}
 
 		SetCellsState();
-		UpdateTerrain();
-		UpdateObstacles();
+		if (gGameLevel == 1) {
+			UpdateTerrain();
+			UpdateObstacles();
+		} else {
+			UpdateTerrainHome();
+			UpdateObstaclesHome();
+		}
 
 		{
 			int cx = playerPosition.x + playerSpriteWidth / 2.0f;
@@ -425,12 +446,12 @@ void UpdateGameScreen(void) {
 					finishScreen = 1;
 				}
 			}
-			if (node->chappal->position.x < playerPosition.x - (WIDTH / 2) - (SPAWN_OFFSET + 100) ||
-			    node->chappal->position.x > playerPosition.x + (WIDTH / 2) + (SPAWN_OFFSET + 100) ||
+			if (node->chappal->position.x < playerPosition.x - (WIDTH / 2.0f) - (SPAWN_OFFSET + 100) ||
+			    node->chappal->position.x > playerPosition.x + (WIDTH / 2.0f) + (SPAWN_OFFSET + 100) ||
 			    node->chappal->position.y <
-			        playerPosition.y - (HEIGHT / 2) - (SPAWN_OFFSET + 100) ||
+			        playerPosition.y - (HEIGHT / 2.0f) - (SPAWN_OFFSET + 100) ||
 			    node->chappal->position.y >
-			        playerPosition.y + (HEIGHT / 2) + (SPAWN_OFFSET + 100)) {
+			        playerPosition.y + (HEIGHT / 2.0f) + (SPAWN_OFFSET + 100)) {
 				Node* temp = node;
 				node = node->next;
 				DeleteChappalNode(temp);
@@ -511,7 +532,6 @@ void UpdateTerrain(void) {
 
 /// Returns a non-negative int on obstacle, and -1 for no obstacle.
 int ObstacleAt(int x, int y) {
-	static const double OBSTACLE_PROBABILITY = 0.02;
 	uint64_t seed = ((uint64_t)x << 31) * (x ^ ~y);
 
 	if (rng_f64(seed) >= OBSTACLE_PROBABILITY) {
@@ -519,7 +539,7 @@ int ObstacleAt(int x, int y) {
 	}
 
 	seed = ((uint64_t)~x << 31) * (~x ^ ~y);
-	int obstacleType = rng_u64(seed) % 4;
+	int obstacleType = (int)rng_u64(seed);
 	return obstacleType;
 }
 
@@ -533,7 +553,7 @@ void UpdateObstacles(void) {
 			int y = y1 + i;
 
 			int terrainType = gTerrain[idx(i, j, cols)];
-			int obstacleType = ObstacleAt(x, y);
+			int obstacleType = ObstacleAt(x, y) % 4;
 
 			if (terrainType == 0 || obstacleType < 0) {
 				gObstacles[idx(i, j, cols)] = -1;
@@ -642,8 +662,13 @@ void DrawObstacles(void) {
 void DrawGameScreen(void) {
 	BeginMode2D(camera);
 
-	DrawTerrain();
-	DrawObstacles();
+	if (gGameLevel == 1) {
+		DrawTerrain();
+		DrawObstacles();
+	} else {
+		DrawTerrainHome();
+		DrawObstaclesHome();
+	}
 
 	if (face == FACE_LEFT) {
 		DrawTextureRec(
@@ -705,14 +730,14 @@ void DrawGameScreen(void) {
 		// Draw blue board
 		DrawTexture(
 			menuScreen,
-			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2),
-			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2),
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2.0f),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2.0f),
 			WHITE);
 		// Draw game paused text
 		DrawTexture(
 			gamePaused,
-			playerPosition.x + (playerSpriteWidth / 2.0f) - (gamePaused.width / 2),
-			playerPosition.y + (playerSpriteHeight / 2.0f) - (gamePaused.height / 2) - 200,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (gamePaused.width / 2.0f),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (gamePaused.height / 2.0f) - 200,
 			WHITE);
 
 		if (btnState_1 == 0) {
@@ -757,7 +782,7 @@ void DrawGameScreen(void) {
 	// End Testing
 
 	EndMode2D();
-};
+}
 
 // Unloads the textures. I mean what else did you expect from the name?
 void UnloadGameScreen(void) {
@@ -781,10 +806,122 @@ void UnloadGameScreen(void) {
 	UnloadTexture(button6);
 	UnloadTexture(button);
 	UnloadTexture(player);
-};
+}
 
 // This function returns whether the game should end or not.
 // No logic implemented as of yet.
 int FinishGameScreen(void) {
 	return finishScreen;
-};
+}
+
+void UpdateTerrainHome(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
+
+	Image noiseImage = GenImagePerlinNoise(cols, rows, x1, y1, 5.0f);
+	Color* colors = LoadImageColors(noiseImage);
+	UnloadImage(noiseImage);
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			Color color = colors[i * cols + j];
+			assert(color.r == color.g && color.r == color.b && color.a == 255);
+			int intensity = color.r;
+
+			if (intensity < 75) {
+				gTerrain[idx(i, j, cols)] = 0;
+			} else if (intensity < 150) {
+				gTerrain[idx(i, j, cols)] = 2;
+			} else {
+				gTerrain[idx(i, j, cols)] = 1;
+			}
+		}
+	}
+
+	UnloadImageColors(colors);
+}
+
+void UpdateObstaclesHome(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int x = x1 + j;
+			int y = y1 + i;
+
+			int terrainType = gTerrain[idx(i, j, cols)];
+			int saveProbability = OBSTACLE_PROBABILITY;
+			OBSTACLE_PROBABILITY = 0.06;
+			int obstacleType = ObstacleAt(x, y);
+			OBSTACLE_PROBABILITY = saveProbability;
+
+			if (obstacleType < 0) {
+				gObstacles[idx(i, j, cols)] = -1;
+				continue;
+			}
+
+			assert(terrainType >= 0 && terrainType < 3);
+			gObstacles[idx(i, j, cols)] = obstacleType % 20;
+		}
+	}
+}
+
+void DrawTerrainHome(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int y = y1 + i;
+			int x = x1 + j;
+			int si = 0, sj = 0;
+
+			// clang-format off
+			switch(gTerrain[idx(i, j, cols)]) {
+				default:
+				case 0: si =  1; sj =  1; break;
+				case 1: si =  7; sj =  1; break;
+				case 2: si = 13; sj =  1; break;
+			}
+			// clang-format on
+
+			Rectangle terrainRect =
+				{.x = 16 * 4 * sj, .y = 16 * 4 * si, .width = 16 * 4, .height = 16 * 4};
+			DrawTextureRec(
+				household,
+				terrainRect,
+				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+				WHITE);
+		}
+	}
+}
+
+void DrawObstaclesHome(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int x = x1 + j;
+			int y = y1 + i;
+
+			int obstacleType = gObstacles[idx(i, j, cols)];
+			if (obstacleType < 0) {
+				continue;
+			}
+
+			// int terrainType = gTerrain[idx(i, j, cols)];
+			int oi = 23 + obstacleType / 8;
+			int oj = obstacleType % 8;
+
+			Rectangle obstacleRect =
+				{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
+			DrawTextureRec(
+				household,
+				obstacleRect,
+				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+				WHITE);
+		}
+	}
+}
