@@ -4,6 +4,8 @@
 #include "screens.h"
 #include <raylib.h>
 
+extern GameScreen currentScreen;
+
 static bool
 GuiImageButtonEx(Rectangle bounds, const char *text, Texture2D texture, Rectangle texSource);
 
@@ -66,6 +68,7 @@ void DrawTitleScreen(void) {
 			(Rectangle){0, 0, bigButton.width, bigButton.height})) {
 		menuButtonState = 0;
 		menuButtonState |= 1 << 0;
+		finishScreen = 1;
 	}
 
 	boundBox = (Rectangle){cellWidth / 2, cellHeight * 3, cellWidth, cellHeight - padding};

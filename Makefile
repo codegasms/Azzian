@@ -29,6 +29,10 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	mkdir -p $(BIN_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# format c files
+fmt:
+	clang-format -i screens/*.c headers/*.h
+
 # Clean build artifacts
 clean:
 	rm -rf $(BIN_DIR)/*.o $(TARGET)
