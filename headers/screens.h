@@ -1,6 +1,9 @@
 #ifndef SCREENS_H
 #define SCREENS_H
 
+#include <raylib.h>
+#include <stdbool.h>
+
 typedef enum GameScreen {
 	TITLE = 0,
 	GAMEPLAY
@@ -26,4 +29,20 @@ void DrawGameScreen(void);
 void UnloadGameScreen(void);
 int FinishGameScreen(void);
 
+//----------------------------------------------------------------------------------
+// Taunt Screen Functions Declaration
+//----------------------------------------------------------------------------------
+void InitTauntScreen(void);
+void UpdateTauntScreen(void);
+void DrawTauntScreen(void);
+void UnloadTauntScreen(void);
+int FinishTauntScreen(void);
+
+bool GuiImageButtonEx(Rectangle bounds, const char *text, Texture2D texture, Rectangle texSource);
+bool GuiImageButtonExTint(
+	Rectangle bounds,
+	const char *text,
+	Texture2D texture,
+	Rectangle texSource,
+	Color tint);
 #endif
