@@ -33,3 +33,9 @@ core of the game made for the 3 day game jam Global Gamejam 2024
 - [ ] House Elements
 - [ ] Search funny SFX
 - [ ] Get "inpsiration" from Steven He
+
+> SFX
+
+- Add quack on credits "I don't give a duck".
+- Play HAIYAAAA (Uncle Roger) on language button.
+- Play roblox death sound on Damage
