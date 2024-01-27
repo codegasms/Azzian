@@ -3,7 +3,7 @@
 #include <raymath.h>
 #include <stdio.h>
 
-GameScreen currentScreen = TITLE;
+GameScreen currentScreen = GAMEPLAY;
 
 void UpdateDrawFrame(void);
 Vector2 GetCenterTileLocation();
@@ -46,9 +46,20 @@ void UpdateDrawFrame(void) {
 	switch (currentScreen) {
 	case GAMEPLAY:
 		UpdateGameScreen();
+
+		if (FinishGameScreen() == 1) {
+			UnloadGameScreen();
+			InitTitleScreen();
+			currentScreen = TITLE;
+		}
 		break;
 	case TITLE:
 		UpdateTitleScreen();
+		if (FinishTitleScreen() == 1) {
+			UnloadTitleScreen();
+			InitGameScreen();
+			currentScreen = GAMEPLAY;
+		}
 		break;
 	default:
 		break;
