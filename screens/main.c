@@ -11,6 +11,7 @@ Vector2 GetCenterTileLocation();
 int main() {
 	InitWindow(1280, 720, "Test Game");
 
+	// Change it later to Title screen. Player should not go directly to the game screen.
 	switch (currentScreen) {
 	case GAMEPLAY:
 		InitGameScreen();
@@ -47,9 +48,19 @@ void UpdateDrawFrame(void) {
 	switch (currentScreen) {
 	case GAMEPLAY:
 		UpdateGameScreen();
+
+		if (FinishGameScreen() == 1) {
+			UnloadGameScreen();
+			InitTitleScreen();
+			currentScreen = TITLE;
+		}
 		break;
 	case TITLE:
 		UpdateTitleScreen();
+			UnloadTitleScreen();
+			InitGameScreen();
+			currentScreen = GAMEPLAY;
+		}
 		break;
 	default:
 		break;
