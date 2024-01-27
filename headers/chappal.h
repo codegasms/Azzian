@@ -18,6 +18,8 @@ typedef struct Chappal {
 Chappal* CreateChappal(Texture2D texture, Vector2 target);
 void UpdateChappal(Chappal* chappal);
 void DrawChappal(Chappal* chappal);
+void IncreaseSpeed();
+void SetSpeed(float newSpeed);
 void DestroyChappal(Chappal* chappal);
 
 #endif
