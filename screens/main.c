@@ -61,8 +61,8 @@ void UpdateDrawFrame(void) {
 	case TITLE:
 		UpdateTitleScreen();
 		if (FinishTitleScreen() == 1) {
-			UnloadTitleScreen();
 			currentScreen = GAMEPLAY;
+			UnloadTitleScreen();
 			InitGameScreen();
 		} else if (FinishTitleScreen() == 2) {
 			quitGame = true;
