@@ -18,6 +18,7 @@ static Camera2D camera = {0};
 Texture2D grassland = {0};
 
 Rectangle frameRec = {0};
+Rectangle playerRec = {0};
 int currentFrame = 0;
 int framesCounter = 0;
 int framesSpeed = 0;
@@ -29,6 +30,7 @@ static int WIDTH;
 static int HEIGHT;
 
 static int finishScreen = 0;
+static int lives = 5;
 const bool debug = true;
 
 int face = 0;
@@ -54,9 +56,18 @@ typedef struct ChappalList {
 static ChappalList* chappalList;
 
 void InitGameScreen(void) {
+	finishScreen = 0;
+	lives = 10;
+
 	// Initialize player position
 	playerPosition.x = 0.0f;
 	playerPosition.y = 0.0f;
+
+	playerRec = (Rectangle){
+		playerPosition.x - (float)player.width / 20,
+		playerPosition.y - (float)player.height / 40,
+		(float)player.width / 10,
+		(float)player.height / 20};
 
 	// Testing
 	chappalTexture = LoadTexture("resources/book.png");
@@ -206,10 +217,27 @@ void UpdateGameScreen(void) {
 		.x = playerPosition.x + playerSpriteWidth / 2.0f,
 		.y = playerPosition.y + playerSpriteHeight / 2.0f};
 
+	playerRec = (Rectangle){
+		playerPosition.x - (float)player.width / 20,
+		playerPosition.y - (float)player.height / 40,
+		(float)player.width / 10,
+		(float)player.height / 20};
+
 	// Draw chappals
 	Node* node = chappalList->head;
 	while (node != NULL) {
 		UpdateChappal(node->chappal);
+		Rectangle chappalRec =
+			(Rectangle){node->chappal->position.x - 10, node->chappal->position.y - 10, 20, 20};
+		if (CheckCollisionRecs(playerRec, chappalRec)) {
+			lives--;
+			Node* temp = node;
+			node = node->next;
+			DeleteChappal(temp);
+			if (lives == 0) {
+				finishScreen = 1;
+			}
+		}
 		if (node->chappal->position.x < playerPosition.x - (WIDTH / 2) - SPAWN_OFFSET ||
 		    node->chappal->position.x > playerPosition.x + (WIDTH / 2) + SPAWN_OFFSET ||
 		    node->chappal->position.y < playerPosition.y - (HEIGHT / 2) - SPAWN_OFFSET ||
@@ -427,6 +455,12 @@ void DrawGameScreen(void) {
 		node = node->next;
 		counter++;
 	}
+	DrawText(
+		TextFormat("Lives: %d", lives),
+		playerPosition.x - 600,
+		playerPosition.y - 270,
+		20,
+		BLACK);
 	// Testing
 	if (debug) {
 		DrawText(
