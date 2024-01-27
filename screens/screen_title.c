@@ -1,18 +1,9 @@
 #define RAYGUI_IMPLEMENTATION
-
 #include "raygui.h"
 #include "screens.h"
 #include <raylib.h>
 
 extern GameScreen currentScreen;
-
-bool GuiImageButtonExTint(
-	Rectangle bounds,
-	const char *text,
-	Texture2D texture,
-	Rectangle texSource,
-	Color tint);
-bool GuiImageButtonEx(Rectangle bounds, const char *text, Texture2D texture, Rectangle texSource);
 
 Image menuBg = {0};
 
