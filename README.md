@@ -9,6 +9,7 @@ core of the game made for the 3 day game jam Global Gamejam 2024
 - `./Azzian`
 
 # TODO 2024-01-26 - DONE
+
 - [x] Create a Title Screen
 - [x] Spawn chappal
 - [x] Tree spawning logic
@@ -20,7 +21,7 @@ core of the game made for the 3 day game jam Global Gamejam 2024
 - [x] Implement chappal rain
 - [ ] Design levels {Garden, School, Home} -> Only change the textures and tiles.
 - [ ] Enemy random encounter
-- [ ] Implement hearts
+- [x] Implement hearts
 - [ ] Implement SFX
 - [ ] Implement Parry (maybe?)
 
