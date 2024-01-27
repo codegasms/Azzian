@@ -8,25 +8,31 @@
 // Creates a new chappal at a random location with a random rotation speed.
 // Speed will increase with time.
 
-static float speed = 3.0f;
+static float speed = 6.0f;
 
 Chappal* CreateChappal(Texture2D texture, Vector2 target) {
 	Chappal* chappal = malloc(sizeof(Chappal));
 	int x = 0;
 	int y = 0;
+	const int WIDTH = GetScreenWidth();
+	const int HEIGHT = GetScreenHeight();
 	if (GetRandomValue(0, 1)) {
-		x = GetRandomValue(-SPAWN_OFFSET, GetScreenWidth() + SPAWN_OFFSET);
+		x = GetRandomValue(
+			target.x - (WIDTH / 2) - SPAWN_OFFSET,
+			target.x + (WIDTH / 2) + SPAWN_OFFSET);
 		if (GetRandomValue(0, 1)) {
-			y = GetScreenHeight() + SPAWN_OFFSET;
+			y = target.y + (HEIGHT / 2) + SPAWN_OFFSET;
 		} else {
-			y = -SPAWN_OFFSET;
+			y = target.y - (HEIGHT / 2) - SPAWN_OFFSET;
 		}
 	} else {
-		y = GetRandomValue(-SPAWN_OFFSET, GetScreenHeight() + SPAWN_OFFSET);
+		y = GetRandomValue(
+			target.y - (HEIGHT / 2) - SPAWN_OFFSET,
+			target.y + (HEIGHT / 2) + SPAWN_OFFSET);
 		if (GetRandomValue(0, 1)) {
-			x = GetScreenWidth() + SPAWN_OFFSET;
+			x = target.x + (WIDTH / 2) + SPAWN_OFFSET;
 		} else {
-			x = -SPAWN_OFFSET;
+			x = target.x - (WIDTH / 2) - SPAWN_OFFSET;
 		}
 	}
 	Vector2 position = {x, y};

@@ -2,15 +2,28 @@
 
 core of the game made for the 3 day game jam Global Gamejam 2024
 
-# TODO TODAY
-- [ ] Create a Title Screen
-- [ ] Spawn chappal
-- [ ] Tree spawning logic and collisions
-- [ ] Bug fix: Diagonal movement
+# TODO 2024-01-26 - DONE
 
-# TODO
+- [x] Create a Title Screen
+- [x] Spawn chappal
+- [x] Tree spawning logic
+- [x] Bug fix: Diagonal movement
+
+# TODO 2024-01-27
+
+- [ ] Implement collision
+- [x] Implement chappal rain
+- [ ] Design levels {Garden, School, Home} -> Only change the textures and tiles.
+- [ ] Enemy random encounter
 - [ ] Implement hearts
-- [ ] Implement
-- [ ] Implement Parry
-- [ ] Enemy spawning
-- [ ] Enemy logic
+- [ ] Implement SFX
+- [ ] Implement Parry (maybe?)
+
+> Design
+
+- [ ] School Texture
+- [ ] School elements
+- [ ] House Texture
+- [ ] House Elements
+- [ ] Search funny SFX
+- [ ] Get "inpsiration" from Steven He
