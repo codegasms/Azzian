@@ -7,13 +7,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define SPAWN_DELAY 0.75f
+#define MAX_LIVES 20
 
 static Vector2 playerPosition = {0};
 static Vector2 centerTile = {0, 0};
 static Texture2D background = {0};
 static Texture2D player = {0};
-Texture2D chappalTexture = {0};
+static Texture2D chappalTexture = {0};
+static Texture2D heart = {0};
 static Camera2D camera = {0};
 Texture2D grassland = {0};
 
@@ -30,7 +31,7 @@ static int WIDTH;
 static int HEIGHT;
 
 static int finishScreen = 0;
-static int lives = 5;
+static int lives;
 const bool debug = true;
 
 int face = 0;
@@ -57,7 +58,7 @@ static ChappalList* chappalList;
 
 void InitGameScreen(void) {
 	finishScreen = 0;
-	lives = 10;
+	lives = MAX_LIVES;
 
 	// Initialize player position
 	playerPosition.x = 0.0f;
@@ -83,6 +84,11 @@ void InitGameScreen(void) {
 
 	// Loading Textures
 	background = LoadTexture("resources/background.png");
+
+	Image heart_image = LoadImage("resources/life.png");
+	ImageResizeNN(&heart_image, heart_image.width * 2, heart_image.height * 2);
+	heart = LoadTextureFromImage(heart_image);
+	UnloadImage(heart_image);
 
 	Image image = LoadImage("resources/char.png");
 	ImageResizeNN(&image, image.width * 4, image.height * 4);
@@ -141,7 +147,7 @@ void SpawnChappal() {
 	}
 }
 
-void DeleteChappal(Node* node) {
+void DeleteChappalNode(Node* node) {
 	if (node->prev == NULL) {
 		chappalList->head = node->next;
 	} else {
@@ -233,7 +239,7 @@ void UpdateGameScreen(void) {
 			lives--;
 			Node* temp = node;
 			node = node->next;
-			DeleteChappal(temp);
+			DeleteChappalNode(temp);
 			if (lives == 0) {
 				finishScreen = 1;
 			}
@@ -244,7 +250,7 @@ void UpdateGameScreen(void) {
 		    node->chappal->position.y > playerPosition.y + (HEIGHT / 2) + SPAWN_OFFSET) {
 			Node* temp = node;
 			node = node->next;
-			DeleteChappal(temp);
+			DeleteChappalNode(temp);
 		} else {
 			node = node->next;
 		}
@@ -455,18 +461,37 @@ void DrawGameScreen(void) {
 		node = node->next;
 		counter++;
 	}
-	DrawText(
-		TextFormat("Lives: %d", lives),
-		playerPosition.x - 600,
-		playerPosition.y - 270,
-		20,
-		BLACK);
+
+	// _Static_assert(MAX_LIVES % 4 == 0, "MAX_LIVES must be a multiple of 4");
+	const int HEARTS = (MAX_LIVES + 3) / 4;
+	for (int i = 0; i < HEARTS; ++i) {
+		int rem = lives - i * 4;
+		if (rem < 0) {
+			rem = 0;
+		}
+
+		if (rem > 4)
+			rem = 4;
+		DrawTextureRec(
+			heart,
+			(Rectangle){17 * 2 * (4 - rem), 0, 17 * 2, 17 * 2},
+			(Vector2){playerPosition.x - 600 + (17 * 2 * i), playerPosition.y - 300},
+			WHITE);
+	}
+
 	// Testing
 	if (debug) {
+		DrawRectangle(-5, -5, 10, 10, RED);
+		DrawText(
+			TextFormat("Lives: %d", lives),
+			playerPosition.x - 600,
+			playerPosition.y - 250,
+			20,
+			BLACK);
 		DrawText(
 			TextFormat("Chappals: %d", counter),
 			playerPosition.x - 600,
-			playerPosition.y - 300,
+			playerPosition.y - 220,
 			20,
 			BLACK);
 	}
@@ -484,8 +509,9 @@ void UnloadGameScreen(void) {
 	while (node != NULL) {
 		Node* temp = node;
 		node = node->next;
-		DeleteChappal(temp);
+		DeleteChappalNode(temp);
 	}
+	UnloadTexture(heart);
 	UnloadTexture(background);
 	UnloadTexture(player);
 };
