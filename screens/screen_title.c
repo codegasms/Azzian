@@ -24,6 +24,7 @@ static Music outro = {0};
 static Music cchj = {0};
 static Music wrongBuzzer = {0};
 static Music correctBuzzer = {0};
+static Music click = {0};
 
 static int menuButtonState = 0;
 
@@ -93,6 +94,8 @@ void InitTitleScreen(void) {
 	wrongBuzzer.looping = false;
 	correctBuzzer = LoadMusicStream("resources/audio/correct.mp3");
 	correctBuzzer.looping = false;
+	click = LoadMusicStream("resources/audio/click.mp3");
+	click.looping = false;
 	cchj = LoadMusicStream("resources/audio/chingchenghanji.mp3");
 	outro = LoadMusicStream("resources/audio/outro.mp3");
 	titleOST = LoadMusicStream("resources/audio/titleOST.mp3");
@@ -116,6 +119,7 @@ void UpdateTitleScreen(void) {
 	UpdateMusicStream(cchj);
 	UpdateMusicStream(wrongBuzzer);
 	UpdateMusicStream(correctBuzzer);
+	UpdateMusicStream(click);
 
 	frameCounter++;
 	if (frameCounter >= frameDelay) {
@@ -232,8 +236,8 @@ void DrawTitleScreen(void) {
 			((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 			(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 	    menuType == MENU_MAIN) {
-		StopMusicStream(vboom);
-		PlayMusicStream(vboom);
+		StopMusicStream(click);
+		PlayMusicStream(click);
 		PauseMusicStream(titleOST);
 		PlayMusicStream(outro);
 		menuButtonState = 0;
@@ -269,8 +273,8 @@ void DrawTitleScreen(void) {
 			((menuButtonState >> 5) & 1) == 1 ? smallButtonPressed : smallButton,
 			(Rectangle){0, 0, smallButton.width, smallButton.height}) &&
 	    menuType == MENU_MAIN) {
-		StopMusicStream(vboom);
-		PlayMusicStream(vboom);
+		StopMusicStream(click);
+		PlayMusicStream(click);
 		PauseMusicStream(titleOST);
 		PlayMusicStream(cchj);
 		menuButtonState = 0;
@@ -389,8 +393,8 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_HELP) {
-			StopMusicStream(vboom);
-			PlayMusicStream(vboom);
+			StopMusicStream(click);
+			PlayMusicStream(click);
 			menuButtonState = 0;
 			menuType = MENU_MAIN;
 		}
@@ -464,8 +468,8 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_EXIT) {
-			StopMusicStream(vboom);
-			PlayMusicStream(vboom);
+			StopMusicStream(click);
+			PlayMusicStream(click);
 			StopMusicStream(outro);
 			ResumeMusicStream(titleOST);
 			menuButtonState = 0;
@@ -540,8 +544,8 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_LANG) {
-			StopMusicStream(vboom);
-			PlayMusicStream(vboom);
+			StopMusicStream(click);
+			PlayMusicStream(click);
 			menuButtonState = 0;
 			menuType = MENU_MAIN;
 		}
@@ -611,8 +615,8 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_CREDITS) {
-			StopMusicStream(vboom);
-			PlayMusicStream(vboom);
+			StopMusicStream(click);
+			PlayMusicStream(click);
 			StopMusicStream(cchj);
 			ResumeMusicStream(titleOST);
 			menuButtonState = 0;
@@ -637,6 +641,7 @@ void UnloadTitleScreen(void) {
 	UnloadMusicStream(cchj);
 	UnloadMusicStream(wrongBuzzer);
 	UnloadMusicStream(correctBuzzer);
+	UnloadMusicStream(click);
 	CloseAudioDevice();
 };
 

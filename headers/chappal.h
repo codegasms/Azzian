@@ -10,9 +10,7 @@
 #define MAX_CHAPPAL_TYPES 4
 
 // TODO: add resource links
-const static char *chappalSources[MAX_CHAPPAL_TYPES] = {
-	// "resources/Square Buttons/Colored Square Buttons/Audio col_Square Button.png",
-	// "resources/Square Buttons/Colored Square Buttons/Back col_Square Button.png",
+static const char *chappalSources[MAX_CHAPPAL_TYPES] = {
 	"resources/burger.png",
 	"resources/chappal_1.png",
 	"resources/chappal_2.png",

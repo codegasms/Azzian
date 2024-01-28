@@ -39,6 +39,8 @@ Texture2D grassland = {0};
 Texture2D household = {0};
 
 Music oof = {0};
+Music gameOST = {0};
+Music click = {0};
 
 int gGameLevel = 1;
 
@@ -157,6 +159,11 @@ void InitGameScreen(void) {
 
 	oof = LoadMusicStream("resources/audio/oof.mp3");
 	oof.looping = false;
+	click = LoadMusicStream("resources/audio/click.mp3");
+	click.looping = false;
+	gameOST = LoadMusicStream("resources/audio/gameOST.mp3");
+	SetMusicVolume(gameOST, 0.2f);
+	PlayMusicStream(gameOST);
 
 	// Loading Textures
 	Image scroll = LoadImage("resources/scroll.png");
@@ -354,6 +361,9 @@ int gTerrain[100 * 100];
 int gObstacles[100 * 100];
 
 void UpdateGameScreen(void) {
+	UpdateMusicStream(gameOST);
+	UpdateMusicStream(click);
+
 	if (IsKeyPressed(KEY_T)) {
 		randomSpawn = !randomSpawn;
 	}
@@ -408,6 +418,8 @@ void UpdateGameScreen(void) {
 
 				if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
 					pressed_1 = true;
+					StopMusicStream(click);
+					PlayMusicStream(click);
 				}
 			} else {
 				btnState_1 = 0;
@@ -423,15 +435,19 @@ void UpdateGameScreen(void) {
 
 				if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
 					pressed_2 = true;
+					StopMusicStream(click);
+					PlayMusicStream(click);
 				}
 			} else {
 				btnState_2 = 0;
 			}
 
 			if (pressed_1) {
+				StopMusicStream(gameOST);
 				paused = false;
 				pressed_1 = false;
 			} else if (pressed_2) {
+				StopMusicStream(gameOST);
 				finishScreen = 1;
 				paused = false;
 				pressed_2 = false;
@@ -453,12 +469,15 @@ void UpdateGameScreen(void) {
 
 				if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
 					pressed_3 = true;
+					StopMusicStream(click);
+					PlayMusicStream(click);
 				}
 			} else {
 				btnState_3 = 0;
 			}
 
 			if (pressed_3) {
+				StopMusicStream(gameOST);
 				finishScreen = 1;
 				gameOver = false;
 				pressed_3 = false;
@@ -466,6 +485,7 @@ void UpdateGameScreen(void) {
 
 		} else {
 			UpdateMusicStream(oof);
+			UpdateMusicStream(click);
 
 			framesCounter++;
 
@@ -1035,6 +1055,8 @@ void UnloadGameScreen(void) {
 	UnloadTexture(button);
 	UnloadTexture(player);
 	UnloadMusicStream(oof);
+	UnloadMusicStream(gameOST);
+	UnloadMusicStream(click);
 	CloseAudioDevice();
 }
 
