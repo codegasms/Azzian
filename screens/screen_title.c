@@ -98,6 +98,7 @@ void InitTitleScreen(void) {
 	click.looping = false;
 	cchj = LoadMusicStream("resources/audio/chingchenghanji.mp3");
 	outro = LoadMusicStream("resources/audio/outro.mp3");
+	outro.looping = false;
 	titleOST = LoadMusicStream("resources/audio/titleOST.mp3");
 
 	PlayMusicStream(titleOST);
@@ -284,6 +285,10 @@ void DrawTitleScreen(void) {
 
 	if (menuType != MENU_MAIN) {
 		DrawRectangle(0, 0, screenWidth, screenHeight, (Color){0, 0, 0, 200});
+	}
+
+	if (!IsMusicStreamPlaying(outro) && menuType == MENU_EXIT) {
+		finishScreen = 2;
 	}
 
 	if (((menuButtonState >> 1) & 1)) {
