@@ -25,6 +25,8 @@ int main() {
 		break;
 	}
 
+	SetExitKey(KEY_NULL);
+
 	SetTargetFPS(60);
 	while (!WindowShouldClose()) {
 		ClearBackground(RAYWHITE);

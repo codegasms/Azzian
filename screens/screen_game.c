@@ -406,7 +406,7 @@ void UpdateGameScreen(void) {
 	// }
 
 	if (!randomSpawn) {
-		if (IsKeyPressed(KEY_SPACE)) {
+		if (IsKeyPressed(KEY_ESCAPE)) {
 			paused = !paused;
 			pauseBtn1Rec = (Rectangle){
 				playerPosition.x + (playerSpriteWidth / 2.0f) - 3 * button.width / 2.0f,
