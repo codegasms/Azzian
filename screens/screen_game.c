@@ -13,7 +13,7 @@ extern int characterIdx;
 extern int tauntIdx;
 
 #define MAX_LIVES 20
-#define LEVEL_CHANGE_SCORE 40
+#define LEVEL_CHANGE_SCORE 400
 #define INNER_VOICE_DURATION 500
 
 static double OBSTACLE_PROBABILITY = 0.02;
