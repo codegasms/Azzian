@@ -14,7 +14,7 @@ static double OBSTACLE_PROBABILITY = 0.02;
 static Vector2 playerPosition = {0};
 static Texture2D background = {0};
 static Texture2D player = {0};
-static Texture2D chappalTexture = {0};
+static Texture2D chappalTextures[MAX_CHAPPAL_TYPES] = {0};
 static Texture2D heart = {0};
 static Texture2D menuScreen = {0};
 static Texture2D endScreen = {0};
@@ -133,7 +133,16 @@ void InitGameScreen(void) {
 		player.height / 20.0f};
 
 	// Testing
-	chappalTexture = LoadTexture("resources/book.png");
+	// chappalTexture = LoadTexture("resources/book.png");
+
+	for (int i = 0; i < MAX_CHAPPAL_TYPES; i++) {
+		Image chap = LoadImage(chappalSources[i]);
+		// TODO: resize chappal assets
+		ImageResizeNN(&chap, chap.width * 0.25f, chap.height * 0.25f);
+		chappalTextures[i] = LoadTextureFromImage(chap);
+		UnloadImage(chap);
+	}
+
 	chappalList = (ChappalList*)malloc(sizeof(ChappalList));
 	chappalList->head = NULL;
 	// chappal = CreateChappal(chappalTexture, playerPosition);
@@ -290,8 +299,9 @@ Node* createNode(Chappal* chappal) {
 }
 
 void SpawnChappal() {
+	// pass chappalTextures
 	Chappal* chappal = CreateChappal(
-		chappalTexture,
+		chappalTextures,
 		(Vector2){
 			playerPosition.x + playerSpriteWidth / 2.0f,
 			playerPosition.y + playerSpriteHeight / 2.0f});
@@ -533,7 +543,12 @@ void UpdateGameScreen(void) {
 			Rectangle chappalRec =
 				(Rectangle){node->chappal->position.x - 10, node->chappal->position.y - 10, 20, 20};
 			if (CheckCollisionRecs(playerRec, chappalRec)) {
-				lives--;
+				if (node->chappal->type == KHANA) {
+					lives++;
+					if (lives > MAX_LIVES)
+						lives = MAX_LIVES;
+				} else
+					lives--;
 				Node* temp = node;
 				node = node->next;
 				DeleteChappalNode(temp);
@@ -949,7 +964,10 @@ void DrawGameScreen(void) {
 // Unloads the textures. I mean what else did you expect from the name?
 void UnloadGameScreen(void) {
 	// Delete chappals
-	UnloadTexture(chappalTexture);
+	// UnloadTexture(chappalTexture);
+	for (int i = 0; i < MAX_CHAPPAL_TYPES; i++) {
+		UnloadTexture(chappalTextures[i]);
+	}
 	Node* node = chappalList->head;
 	while (node != NULL) {
 		Node* temp = node;

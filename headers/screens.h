@@ -3,6 +3,7 @@
 
 #include <raylib.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef enum GameScreen {
 	TITLE = 0,
@@ -45,4 +46,10 @@ bool GuiImageButtonExTint(
 	Texture2D texture,
 	Rectangle texSource,
 	Color tint);
+
+/// Generate a random uint64_t based on the given seed using the WyHash algorithm.
+uint64_t rng_u64(uint64_t seed);
+
+/// Generate a random double in range [0, 1].
+double rng_f64(uint64_t seed);
 #endif

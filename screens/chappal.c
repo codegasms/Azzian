@@ -10,7 +10,8 @@
 
 static float speed = 6.0f;
 
-Chappal* CreateChappal(Texture2D texture, Vector2 target) {
+Chappal* CreateChappal(Texture2D textures[], Vector2 target) {
+	// Texture2D textures
 	Chappal* chappal = malloc(sizeof(Chappal));
 	int x = 0;
 	int y = 0;
@@ -42,7 +43,20 @@ Chappal* CreateChappal(Texture2D texture, Vector2 target) {
 	chappal->rotation = 0.0f;
 	chappal->rotationSpeed = (float)GetRandomValue(ROTATION_SPEED_MIN, ROTATION_SPEED_MAX) / 10.0f;
 	chappal->direction = direction;
-	chappal->texture = texture;
+	// chappal->texture = texture;
+	// chappal->type = random type between 1 to n
+	int randNum = rng_u64(rng_u64(time(NULL))) % 100;
+
+	if (randNum < 5)
+		chappal->type = KHANA;
+	else if (randNum < 20)
+		chappal->type = DANDA;
+	else if (randNum < 40)
+		chappal->type = JUTA;
+	else
+		chappal->type = CHAPPAL;
+	printf("%d chappal type", chappal->type);
+	chappal->texture = textures[chappal->type];
 	return chappal;
 }
 
