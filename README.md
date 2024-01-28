@@ -1,6 +1,6 @@
 # Azzian
 
-core of the game made for the 3 day game jam Global Gamejam 2024
+A funny pixel game about an Asian boy who is chased around by slippers and constantly taunted by family, peers and the game itself.
 
 ## Running
 
