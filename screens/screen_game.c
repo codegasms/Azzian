@@ -12,6 +12,7 @@
 
 static double OBSTACLE_PROBABILITY = 0.02;
 static Vector2 playerPosition = {0};
+static Texture2D scrolls = {0};
 static Texture2D background = {0};
 static Texture2D player = {0};
 static Texture2D chappalTextures[MAX_CHAPPAL_TYPES] = {0};
@@ -62,6 +63,7 @@ static int lives;
 static int score;
 
 static bool paused = false;
+static bool randomSpawn = false;
 static bool gameOver = false;
 static bool pressed_1;
 static bool pressed_2;
@@ -149,6 +151,11 @@ void InitGameScreen(void) {
 	// End Testing
 
 	// Loading Textures
+	Image scroll = LoadImage("resources/scroll.png");
+	ImageResizeNN(&scroll, scroll.width, scroll.height);
+	scrolls = LoadTextureFromImage(scroll);
+	UnloadImage(scroll);
+
 	background = LoadTexture("resources/background.png");
 
 	Image menuImage = LoadImage("resources/Sprites/UI_Flat_Frame_01_Standard.png");
@@ -339,18 +346,12 @@ int gTerrain[100 * 100];
 int gObstacles[100 * 100];
 
 void UpdateGameScreen(void) {
-	if (IsKeyPressed(KEY_SPACE)) {
-		paused = !paused;
-		pauseBtn1Rec = (Rectangle){
-			playerPosition.x + (playerSpriteWidth / 2.0f) - 3 * button.width / 2.0f,
-			playerPosition.y + (playerSpriteHeight / 2.0f) - (button.height / 2.0f) + 150,
-			button.width,
-			button.height};
-		pauseBtn2Rec = (Rectangle){
-			playerPosition.x + (playerSpriteWidth / 2.0f) + button.width / 2.0f,
-			playerPosition.y + (playerSpriteHeight / 2.0f) - (button.height / 2.0f) + 150,
-			button.width,
-			button.height};
+	if (IsKeyPressed(KEY_T)) {
+		randomSpawn = !randomSpawn;
+	}
+
+	if (randomSpawn) {
+		UpdateTauntScreen();
 	}
 
 	if (score % 100 == 0 && score != 0) {
@@ -367,209 +368,229 @@ void UpdateGameScreen(void) {
 	// 	}
 	// }
 
-	if (paused && !gameOver) {
-		Vector2 mousePoint = GetMousePosition();
-
-		if (debug) {
-			printf("x: %f; y:%f\n", mousePoint.x, mousePoint.y);
+	if (!randomSpawn) {
+		if (IsKeyPressed(KEY_SPACE)) {
+			paused = !paused;
+			pauseBtn1Rec = (Rectangle){
+				playerPosition.x + (playerSpriteWidth / 2.0f) - 3 * button.width / 2.0f,
+				playerPosition.y + (playerSpriteHeight / 2.0f) - (button.height / 2.0f) + 150,
+				button.width,
+				button.height};
+			pauseBtn2Rec = (Rectangle){
+				playerPosition.x + (playerSpriteWidth / 2.0f) + button.width / 2.0f,
+				playerPosition.y + (playerSpriteHeight / 2.0f) - (button.height / 2.0f) + 150,
+				button.width,
+				button.height};
 		}
 
-		if (mousePoint.x >= 355 && mousePoint.x <= 540 && mousePoint.y >= 480 &&
-		    mousePoint.y <= 540) {
-			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-				btnState_1 = 2;
+		if (paused && !gameOver) {
+			Vector2 mousePoint = GetMousePosition();
+
+			if (debug) {
+				printf("x: %f; y:%f\n", mousePoint.x, mousePoint.y);
+			}
+
+			if (mousePoint.x >= 355 && mousePoint.x <= 540 && mousePoint.y >= 480 &&
+			    mousePoint.y <= 540) {
+				if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+					btnState_1 = 2;
+				} else {
+					btnState_1 = 1;
+				}
+
+				if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+					pressed_1 = true;
+				}
 			} else {
-				btnState_1 = 1;
+				btnState_1 = 0;
 			}
 
-			if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-				pressed_1 = true;
-			}
-		} else {
-			btnState_1 = 0;
-		}
+			if (mousePoint.x >= 740 && mousePoint.x <= 925 && mousePoint.y >= 480 &&
+			    mousePoint.y <= 540) {
+				if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+					btnState_2 = 2;
+				} else {
+					btnState_2 = 1;
+				}
 
-		if (mousePoint.x >= 740 && mousePoint.x <= 925 && mousePoint.y >= 480 &&
-		    mousePoint.y <= 540) {
-			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-				btnState_2 = 2;
+				if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+					pressed_2 = true;
+				}
 			} else {
-				btnState_2 = 1;
+				btnState_2 = 0;
 			}
 
-			if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-				pressed_2 = true;
+			if (pressed_1) {
+				paused = false;
+				pressed_1 = false;
+			} else if (pressed_2) {
+				finishScreen = 1;
+				paused = false;
+				pressed_2 = false;
 			}
-		} else {
-			btnState_2 = 0;
-		}
+		} else if (gameOver) {
+			Vector2 mousePoint = GetMousePosition();
 
-		if (pressed_1) {
-			paused = false;
-			pressed_1 = false;
-		} else if (pressed_2) {
-			finishScreen = 1;
-			paused = false;
-			pressed_2 = false;
-		}
-	} else if (gameOver) {
-		Vector2 mousePoint = GetMousePosition();
+			if (debug) {
+				printf("x: %f; y:%f\n", mousePoint.x, mousePoint.y);
+			}
 
-		if (debug) {
-			printf("x: %f; y:%f\n", mousePoint.x, mousePoint.y);
-		}
+			if (mousePoint.x >= 450 && mousePoint.x <= 830 && mousePoint.y >= 475 &&
+			    mousePoint.y <= 540) {
+				if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+					btnState_3 = 2;
+				} else {
+					btnState_3 = 1;
+				}
 
-		if (mousePoint.x >= 450 && mousePoint.x <= 830 && mousePoint.y >= 475 &&
-		    mousePoint.y <= 540) {
-			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-				btnState_3 = 2;
+				if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+					pressed_3 = true;
+				}
 			} else {
-				btnState_3 = 1;
+				btnState_3 = 0;
 			}
 
-			if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-				pressed_3 = true;
+			if (pressed_3) {
+				finishScreen = 1;
+				gameOver = false;
+				pressed_3 = false;
 			}
+
 		} else {
-			btnState_3 = 0;
-		}
+			framesCounter++;
 
-		if (pressed_3) {
-			finishScreen = 1;
-			gameOver = false;
-			pressed_3 = false;
-		}
+			if (framesCounter >= (60 / framesSpeed)) {
+				SpawnChappal();
+				framesCounter = 0;
+				score++;
+				currentFrame++;
 
-	} else {
-		framesCounter++;
+				if (currentFrame > 1)
+					currentFrame = 0;
 
-		if (framesCounter >= (60 / framesSpeed)) {
-			SpawnChappal();
-			framesCounter = 0;
-			score++;
-			currentFrame++;
-
-			if (currentFrame > 1)
-				currentFrame = 0;
-
-			if (face == FACE_LEFT || face == FACE_RIGHT) {
-				frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 8;
-			} else if (face == FACE_UP) {
-				frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 6;
-			} else if (face == FACE_DOWN) {
-				frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 4;
-			}
-		}
-
-		face = FACE_IDLE;
-
-		int deltaX = 0, deltaY = 0;
-		static const int moveSize = 10;
-
-		if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-			deltaX -= 1;
-			face = FACE_LEFT;
-		}
-		if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-			deltaX += 1;
-			face = FACE_RIGHT;
-		}
-		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
-			deltaY -= 1;
-			face = FACE_UP;
-		}
-		if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
-			deltaY += 1;
-			face = FACE_DOWN;
-		}
-
-		int moveX = 0, moveY = 0;
-
-		if (deltaX != 0 && deltaY != 0) {
-			const int diagMoveSize = sqrt((moveSize * moveSize) / 2.0);
-			moveX = deltaX * diagMoveSize;
-			moveY = deltaY * diagMoveSize;
-		} else {
-			moveX = deltaX * moveSize;
-			moveY = deltaY * moveSize;
-		}
-
-		SetCellsState();
-		if (gGameLevel == 1) {
-			UpdateTerrain();
-			UpdateObstacles();
-		} else {
-			UpdateTerrainHome();
-			UpdateObstaclesHome();
-		}
-
-		{
-			int cx = playerPosition.x + playerSpriteWidth / 2.0f;
-			int cy = playerPosition.y + playerSpriteHeight / 2.0f;
-
-			bool collision = false;
-			for (int i = 4; i >= 1; --i) {
-				int nx = CellIdx(cx + (float)moveX / i, playerSpriteWidth);
-				int ny = CellIdx(cy + (float)moveY / i, playerSpriteHeight);
-
-				if (gObstacles[idx(ny - gStartY, nx - gStartX, gCols)] != -1) {
-					collision = true;
-					break;
+				if (face == FACE_LEFT || face == FACE_RIGHT) {
+					frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 8;
+				} else if (face == FACE_UP) {
+					frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 6;
+				} else if (face == FACE_DOWN) {
+					frameRec.x = currentFrame * player.width / 10.0f + player.width / 10.0f * 4;
 				}
 			}
 
-			if (!collision) {
-				playerPosition.x += moveX;
-				playerPosition.y += moveY;
+			face = FACE_IDLE;
+
+			int deltaX = 0, deltaY = 0;
+			static const int moveSize = 10;
+
+			if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
+				deltaX -= 1;
+				face = FACE_LEFT;
 			}
-		}
+			if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
+				deltaX += 1;
+				face = FACE_RIGHT;
+			}
+			if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
+				deltaY -= 1;
+				face = FACE_UP;
+			}
+			if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
+				deltaY += 1;
+				face = FACE_DOWN;
+			}
 
-		// Update the camera
-		camera.offset = (Vector2){WIDTH / 2.0f, HEIGHT / 2.0f};
-		camera.target = (Vector2){
-			.x = playerPosition.x + playerSpriteWidth / 2.0f,
-			.y = playerPosition.y + playerSpriteHeight / 2.0f};
+			int moveX = 0, moveY = 0;
 
-		playerRec = (Rectangle){
-			playerPosition.x,
-			playerPosition.y,
-			player.width / 10.0f,
-			player.height / 20.0f};
+			if (deltaX != 0 && deltaY != 0) {
+				const int diagMoveSize = sqrt((moveSize * moveSize) / 2.0);
+				moveX = deltaX * diagMoveSize;
+				moveY = deltaY * diagMoveSize;
+			} else {
+				moveX = deltaX * moveSize;
+				moveY = deltaY * moveSize;
+			}
 
-		// Draw chappals
-		Node* node = chappalList->head;
-		while (node != NULL) {
-			UpdateChappal(node->chappal);
-			Rectangle chappalRec =
-				(Rectangle){node->chappal->position.x - 10, node->chappal->position.y - 10, 20, 20};
-			if (CheckCollisionRecs(playerRec, chappalRec)) {
-				if (node->chappal->type == KHANA) {
-					lives++;
-					if (lives > MAX_LIVES)
-						lives = MAX_LIVES;
-				} else
-					lives--;
-				Node* temp = node;
-				node = node->next;
-				DeleteChappalNode(temp);
-				if (lives == 0) {
-					// finishScreen = 1;
-					gameOver = true;
+			SetCellsState();
+			if (gGameLevel == 1) {
+				UpdateTerrain();
+				UpdateObstacles();
+			} else {
+				UpdateTerrainHome();
+				UpdateObstaclesHome();
+			}
+
+			{
+				int cx = playerPosition.x + playerSpriteWidth / 2.0f;
+				int cy = playerPosition.y + playerSpriteHeight / 2.0f;
+
+				bool collision = false;
+				for (int i = 4; i >= 1; --i) {
+					int nx = CellIdx(cx + (float)moveX / i, playerSpriteWidth);
+					int ny = CellIdx(cy + (float)moveY / i, playerSpriteHeight);
+
+					if (gObstacles[idx(ny - gStartY, nx - gStartX, gCols)] != -1) {
+						collision = true;
+						break;
+					}
+				}
+
+				if (!collision) {
+					playerPosition.x += moveX;
+					playerPosition.y += moveY;
 				}
 			}
-			if (node->chappal->position.x <
-			        playerPosition.x - (WIDTH / 2.0f) - (SPAWN_OFFSET + 100) ||
-			    node->chappal->position.x >
-			        playerPosition.x + (WIDTH / 2.0f) + (SPAWN_OFFSET + 100) ||
-			    node->chappal->position.y <
-			        playerPosition.y - (HEIGHT / 2.0f) - (SPAWN_OFFSET + 100) ||
-			    node->chappal->position.y >
-			        playerPosition.y + (HEIGHT / 2.0f) + (SPAWN_OFFSET + 100)) {
-				Node* temp = node;
-				node = node->next;
-				DeleteChappalNode(temp);
-			} else {
-				node = node->next;
+
+			// Update the camera
+			camera.offset = (Vector2){WIDTH / 2.0f, HEIGHT / 2.0f};
+			camera.target = (Vector2){
+				.x = playerPosition.x + playerSpriteWidth / 2.0f,
+				.y = playerPosition.y + playerSpriteHeight / 2.0f};
+
+			playerRec = (Rectangle){
+				playerPosition.x,
+				playerPosition.y,
+				player.width / 10.0f,
+				player.height / 20.0f};
+
+			// Draw chappals
+			Node* node = chappalList->head;
+			while (node != NULL) {
+				UpdateChappal(node->chappal);
+				Rectangle chappalRec = (Rectangle){
+					node->chappal->position.x - 10,
+					node->chappal->position.y - 10,
+					20,
+					20};
+				if (CheckCollisionRecs(playerRec, chappalRec)) {
+					if (node->chappal->type == KHANA) {
+						lives++;
+						if (lives > MAX_LIVES)
+							lives = MAX_LIVES;
+					} else
+						lives--;
+					Node* temp = node;
+					node = node->next;
+					DeleteChappalNode(temp);
+					if (lives == 0) {
+						// finishScreen = 1;
+						gameOver = true;
+					}
+				}
+				if (node->chappal->position.x <
+				        playerPosition.x - (WIDTH / 2.0f) - (SPAWN_OFFSET + 100) ||
+				    node->chappal->position.x >
+				        playerPosition.x + (WIDTH / 2.0f) + (SPAWN_OFFSET + 100) ||
+				    node->chappal->position.y <
+				        playerPosition.y - (HEIGHT / 2.0f) - (SPAWN_OFFSET + 100) ||
+				    node->chappal->position.y >
+				        playerPosition.y + (HEIGHT / 2.0f) + (SPAWN_OFFSET + 100)) {
+					Node* temp = node;
+					node = node->next;
+					DeleteChappalNode(temp);
+				} else {
+					node = node->next;
+				}
+
 			}
 		}
 	}
@@ -959,6 +980,12 @@ void DrawGameScreen(void) {
 	// End Testing
 
 	EndMode2D();
+
+	if (randomSpawn) {
+		DrawTauntScreen();
+	}
+
+	// Implement Dialog Box
 }
 
 // Unloads the textures. I mean what else did you expect from the name?
@@ -974,6 +1001,7 @@ void UnloadGameScreen(void) {
 		node = node->next;
 		DeleteChappalNode(temp);
 	}
+	UnloadTexture(scrolls);
 	UnloadTexture(heart);
 	UnloadTexture(scoreBoard);
 	UnloadTexture(endScreen);

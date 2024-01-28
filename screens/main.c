@@ -16,6 +16,7 @@ int main() {
 	switch (currentScreen) {
 	case GAMEPLAY:
 		InitGameScreen();
+		InitTauntScreen();
 		break;
 	case TITLE:
 		InitTitleScreen();
@@ -36,6 +37,7 @@ int main() {
 	switch (currentScreen) {
 	case GAMEPLAY:
 		UnloadGameScreen();
+		UnloadTauntScreen();
 		break;
 	case TITLE:
 		UnloadTitleScreen();
@@ -55,6 +57,7 @@ void UpdateDrawFrame(void) {
 		if (FinishGameScreen() == 1) {
 			currentScreen = TITLE;
 			UnloadGameScreen();
+			UnloadTauntScreen();
 			InitTitleScreen();
 		}
 		break;
@@ -64,6 +67,7 @@ void UpdateDrawFrame(void) {
 			currentScreen = GAMEPLAY;
 			UnloadTitleScreen();
 			InitGameScreen();
+			InitTauntScreen();
 		} else if (FinishTitleScreen() == 2) {
 			quitGame = true;
 		}
