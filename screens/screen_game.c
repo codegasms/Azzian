@@ -13,11 +13,12 @@ extern int characterIdx;
 extern int tauntIdx;
 
 #define MAX_LIVES 20
-#define LEVEL_CHANGE_SCORE 100
+#define LEVEL_CHANGE_SCORE 400
 
 static double OBSTACLE_PROBABILITY = 0.02;
 static Vector2 playerPosition = {0};
 static Texture2D scrolls = {0};
+static Texture2D mainCharacter = {0};
 static Texture2D background = {0};
 static Texture2D player = {0};
 static Texture2D chappalTextures[MAX_CHAPPAL_TYPES] = {0};
@@ -71,6 +72,8 @@ static int lives;
 
 static int score;
 
+static int innerThoughtIdx = 0;
+static int innerCounter = 0;
 static bool paused = false;
 static bool randomSpawn = false;
 static bool randomSelect = false;
@@ -85,6 +88,48 @@ static int btnState_3;
 const bool debug = false;
 
 int face = 0;
+
+static const char* innerVoiceUC[] = {
+	"I've seen NPCs with better aim. You\n\nmust be using a keyboard made of bananas.",
+	"Need some glasses, player? You're missing all\n\nthe action.",
+	"I've had tougher challenges in my sleep.\n\nWake me up when you step up your game.",
+	"You call that an attack? My grandma\n\nhits harder, and she's a pacifist.",
+	"Do you even lift, bro? The health\n\nbar is laughing at your feeble attempts.",
+	"I bet you button-mash your way through\n\nlife. No wonder you can't beat me.",
+	"I've seen more strategy in a game\n\nof tic-tac-toe. Are you even trying?",
+	"Did you just learn to play, or\n\nare you intentionally trying to be terrible?",
+	"Are you using cheat codes? Because I\n\ncan't figure out how you're so bad.",
+	"Congratulations, you're officially the worst player I've\n\nencountered. Impressive.",
+	"I'd ask for a rematch, but I'm\n\nnot sure if you can handle the embarrassment.",
+	"You're like the NPC of players -\n\ntotally expendable and easily replaced.",
+	"I've had tougher battles against menu screens.\n\nThis is just sad.",
+	"If I had a nickel for every\n\ntime you missed, I could afford a better opponent.",
+	"You must be allergic to victory because\n\nyou're breaking out in losses.",
+	"You're not the hero this game needs;\n\nyou're the one it deserves to laugh at.",
+	"I've seen speed bumps that pose a\n\ngreater threat. Is this a joke?",
+	"I've fought tougher enemies in the tutorial.\n\nAre you sure you're not lost?",
+	"Are you playing with your feet? Because\n\nthat would explain a lot.",
+	"If incompetence were a superpower, you'd be\n\na superhero right now.",
+	"My grandma could beat you blindfolded. And\n\nshe's knitting a sweater right now.",
+	"I've seen NPCs with more backbone. Is\n\nthis really the best you've got?",
+	"Are you deliberately trying to make me\n\nquestion the existence of skilled players?",
+	"Is your controller malfunctioning, or are you\n\njust naturally this bad?",
+	"If failure was a high score, you'd\n\nbe topping the charts right now.",
+	"I've seen better strategy in a game\n\nof rock-paper-scissors. Pathetic.",
+	"Is this your first time holding a\n\ncontroller, or are you just this bad naturally?",
+	"I've had more challenging battles against basic\n\narithmetic. Step it up!",
+	"I've seen more skill in a petting\n\nzoo. Are you even trying to win?",
+	"Are you playing with lag, or is\n\nthis your excuse for being so embarrassingly bad?",
+	"I bet even the NPCs are placing\n\nbets on when you'll finally win a battle.",
+	"Your attacks are like poetry - terrible\n\nand completely lacking rhythm.",
+	"You're not a player; you're a liability.\n\nI should file a virtual insurance claim.",
+	"Is your strategy to bore me to\n\ndeath? Because it's working.",
+	"You're like a mosquito in the world\n\nof gaming - annoying and easily swatted.",
+	"I've seen more challenging puzzles in a\n\nchildren's coloring book. Try harder!",
+	"Is your plan to defeat me by\n\nmaking me die of laughter? Because it's working.",
+	"I'd say you're a keyboard warrior, but\n\neven they have more skill than you.",
+	"I've faced tougher challenges in a game\n\nof 'Simon Says.' Are you even trying to win?",
+};
 
 enum {
 	FACE_IDLE,
@@ -173,9 +218,14 @@ void InitGameScreen(void) {
 
 	// Loading Textures
 	Image scroll = LoadImage("resources/scroll.png");
-	ImageResizeNN(&scroll, scroll.width, scroll.height);
+	ImageResizeNN(&scroll, scroll.width * 10, scroll.height * 6);
 	scrolls = LoadTextureFromImage(scroll);
 	UnloadImage(scroll);
+
+	Image mcImage = LoadImage("resources/Character_Combined.png");
+	ImageResizeNN(&mcImage, mcImage.width * 4, mcImage.height * 4);
+	mainCharacter = LoadTextureFromImage(mcImage);
+	UnloadImage(mcImage);
 
 	background = LoadTexture("resources/background.png");
 
@@ -1102,6 +1152,34 @@ void DrawGameScreen(void) {
 
 	EndMode2D();
 
+	if (innerCounter >= 500) {
+		innerCounter = 0;
+		innerThoughtIdx = GetRandomValue(0, 38);
+	}
+
+	if (!paused && !gameOver) {
+		DrawTextureRec(
+			scrolls,
+			(Rectangle){0, 0, scrolls.width, scrolls.height},
+			(Vector2){GetScreenWidth() - scrolls.width + 50, GetRenderHeight() - scrolls.height},
+			WHITE);
+
+		DrawTextureRec(
+			mainCharacter,
+			(Rectangle){7 % 4 * 32 * 4 + 4, 7 / 4 * 32 * 4 + 4, -30 * 4, 30 * 4},
+			(Vector2){
+				GetScreenWidth() - mainCharacter.width / 4 - 10,
+				GetRenderHeight() - scrolls.height - mainCharacter.height / 2 + 20},
+			WHITE);
+
+		DrawText(
+			innerVoiceUC[innerThoughtIdx],
+			GetScreenWidth() - scrolls.width + 100,
+			GetRenderHeight() - scrolls.height + 35,
+			15,
+			BLACK);
+	}
+
 	if (randomSpawn) {
 		if (DrawTauntScreen() == true) {
 			score += 1;
@@ -1110,7 +1188,7 @@ void DrawGameScreen(void) {
 		randomSpawn = !DrawTauntScreen();
 	}
 
-	// Implement Dialog Box
+	innerCounter++;
 }
 
 // Unloads the textures. I mean what else did you expect from the name?
@@ -1127,6 +1205,7 @@ void UnloadGameScreen(void) {
 		DeleteChappalNode(temp);
 	}
 	UnloadTexture(scrolls);
+	UnloadTexture(mainCharacter);
 	UnloadTexture(heart);
 	UnloadTexture(scoreBoard);
 	UnloadTexture(endScreen);
