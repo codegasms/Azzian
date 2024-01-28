@@ -14,6 +14,7 @@ static Texture2D bigButtonPressed = {0};
 static Texture2D smallButton = {0};
 static Texture2D smallButtonPressed = {0};
 static Texture2D scrollPaper = {0};
+static Texture2D logos = {0};
 
 static Music vboom = {0};
 static Music haiya = {0};
@@ -79,6 +80,11 @@ void InitTitleScreen(void) {
 	Image scroll = LoadImage("resources/scroll.png");
 	ImageResizeNN(&scroll, scroll.width * 18, scroll.height * 25);
 	scrollPaper = LoadTextureFromImage(scroll);
+
+	Image logoImage = LoadImage("resources/sponsors/sponsors_merged.png");
+	ImageResizeNN(&logoImage, logoImage.width / 6, logoImage.height / 6);
+	logos = LoadTextureFromImage(logoImage);
+	UnloadImage(logoImage);
 
 	InitAudioDevice();
 
@@ -592,6 +598,11 @@ void DrawTitleScreen(void) {
 			20,
 			3,
 			BLACK);
+		DrawTexture(
+			logos,
+			screenWidth / 2 - logos.width / 2,
+			screenHeight / 2 + padding * 7 - 10,
+			WHITE);
 		if (GuiImageButtonEx(
 				(Rectangle){
 					screenWidth / 2 + bigButton.width / 2,
@@ -638,6 +649,7 @@ void UnloadTitleScreen(void) {
 	UnloadTexture(smallButton);
 	UnloadTexture(smallButtonPressed);
 	UnloadTexture(scrollPaper);
+	UnloadTexture(logos);
 	UnloadMusicStream(quack);
 	UnloadMusicStream(haiya);
 	UnloadMusicStream(vboom);
