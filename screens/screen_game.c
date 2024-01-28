@@ -8,7 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern int characterIdx;
+extern int tauntIdx;
+
 #define MAX_LIVES 20
+#define LEVEL_CHANGE_SCORE 100
 
 static double OBSTACLE_PROBABILITY = 0.02;
 static Vector2 playerPosition = {0};
@@ -68,6 +72,7 @@ static int score;
 
 static bool paused = false;
 static bool randomSpawn = false;
+static bool randomSelect = false;
 static bool gameOver = false;
 static bool pressed_1;
 static bool pressed_2;
@@ -360,19 +365,32 @@ int gRows = 0, gCols = 0;
 int gTerrain[100 * 100];
 int gObstacles[100 * 100];
 
+void healthChangeNPC(int deltaHealth) {
+	lives += deltaHealth;
+	if (lives > MAX_LIVES) {
+		lives = MAX_LIVES;
+	}
+}
+
 void UpdateGameScreen(void) {
 	UpdateMusicStream(gameOST);
 	UpdateMusicStream(click);
 
-	if (IsKeyPressed(KEY_T)) {
-		randomSpawn = !randomSpawn;
+	if (score % (LEVEL_CHANGE_SCORE / 2) == 0 && score != 0) {
+		randomSpawn = true;
+	}
+
+	if (randomSpawn == true && randomSelect == false) {
+		characterIdx = GetRandomValue(0, 6);
+		tauntIdx = GetRandomValue(0, 4);
+		randomSelect = true;
 	}
 
 	if (randomSpawn) {
 		UpdateTauntScreen();
 	}
 
-	if (score % 100 == 0 && score != 0) {
+	if (score % LEVEL_CHANGE_SCORE == 0 && score != 0) {
 		score += 2;
 		gGameLevel = (gGameLevel == 1) ? 2 : 1;
 		IncreaseSpeed();
@@ -604,7 +622,7 @@ void UpdateGameScreen(void) {
 					Node* temp = node;
 					node = node->next;
 					DeleteChappalNode(temp);
-					if (lives == 0) {
+					if (lives <= 0) {
 						// finishScreen = 1;
 						gameOver = true;
 					}
@@ -1014,7 +1032,11 @@ void DrawGameScreen(void) {
 	EndMode2D();
 
 	if (randomSpawn) {
-		DrawTauntScreen();
+		if (DrawTauntScreen() == true) {
+			score += 1;
+			randomSelect = false;
+		}
+		randomSpawn = !DrawTauntScreen();
 	}
 
 	// Implement Dialog Box
