@@ -192,7 +192,25 @@ void InitGameScreen(void) {
 		player.height / 20.0f};
 
 	for (int i = 0; i < MAX_CHAPPAL_TYPES; i++) {
-		Image chap = LoadImage(chappalSources[i]);
+		Image chap = {0};
+
+		// TODO: add resource links
+		switch (i) {
+		case 0:
+			chap = LoadImage("resources/burger.png");
+			break;
+		case 1:
+			chap = LoadImage("resources/chappal_1.png");
+			break;
+		case 2:
+			chap = LoadImage("resources/chappal_2.png");
+			break;
+		default:
+		case 3:
+			chap = LoadImage("resources/chappal_1.png");
+			break;
+		}
+
 		// TODO: resize chappal assets
 		ImageResizeNN(&chap, chap.width * 2, chap.height * 2);
 		chappalTextures[i] = LoadTextureFromImage(chap);
@@ -227,7 +245,9 @@ void InitGameScreen(void) {
 	mainCharacter = LoadTextureFromImage(mcImage);
 	UnloadImage(mcImage);
 
-	background = LoadTexture("resources/background.png");
+	Image backgroundImage = LoadImage("resources/background.png");
+	background = LoadTextureFromImage(backgroundImage);
+	UnloadImage(backgroundImage);
 
 	Image menuImage = LoadImage("resources/Sprites/UI_Flat_Frame_01_Standard.png");
 	ImageResizeNN(&menuImage, menuImage.width * 8, menuImage.height * 6);
@@ -254,7 +274,9 @@ void InitGameScreen(void) {
 	loser = LoadTextureFromImage(menuImage);
 	UnloadImage(menuImage);
 
-	gamePaused = LoadTexture("resources/game_paused.png");
+	Image gamePausedImage = LoadImage("resources/game_paused.png");
+	gamePaused = LoadTextureFromImage(gamePausedImage);
+	UnloadImage(gamePausedImage);
 
 	Image buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a1.png");
 	ImageResizeNN(&buttonImage, buttonImage.width * 2, buttonImage.height * 2);
