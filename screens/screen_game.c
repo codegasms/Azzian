@@ -12,6 +12,7 @@
 
 static double OBSTACLE_PROBABILITY = 0.02;
 static Vector2 playerPosition = {0};
+static Texture2D scrolls = {0};
 static Texture2D background = {0};
 static Texture2D player = {0};
 static Texture2D chappalTexture = {0};
@@ -138,6 +139,11 @@ void InitGameScreen(void) {
 	// End Testing
 
 	// Loading Textures
+	Image scroll = LoadImage("resources/scroll.png");
+	ImageResizeNN(&scroll, scroll.width, scroll.height);
+	scrolls = LoadTextureFromImage(scroll);
+	UnloadImage(scroll);
+
 	background = LoadTexture("resources/background.png");
 
 	Image menuImage = LoadImage("resources/Sprites/UI_Flat_Frame_01_Standard.png");
@@ -945,6 +951,8 @@ void DrawGameScreen(void) {
 	if (randomSpawn) {
 		DrawTauntScreen();
 	}
+
+	// Implement Dialog Box
 }
 
 // Unloads the textures. I mean what else did you expect from the name?
@@ -957,6 +965,7 @@ void UnloadGameScreen(void) {
 		node = node->next;
 		DeleteChappalNode(temp);
 	}
+	UnloadTexture(scrolls);
 	UnloadTexture(heart);
 	UnloadTexture(scoreBoard);
 	UnloadTexture(endScreen);

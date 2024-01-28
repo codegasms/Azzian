@@ -1,105 +1,58 @@
+#include "raygui.h"
 #include "screens.h"
 #include <math.h>
 #include <raylib.h>
 
-Texture2D backgroundTexture = {0};
 Texture2D tauntCharacter = {0};
-Texture2D questionBgTex = {0};
-Texture2D optionsBgTex = {0};
+Texture2D tauntScroll = {0};
+Texture2D bigButton = {0};
 
 int tauntCharacterWidth = 0;
 int tauntCharacterHeight = 0;
 
-#define MAX_OPTIONS 4
+const static char *taunts[7][5] = {
+	{				"Otosan 1",   "Otosan 2","Otosan 3",   "Otosan 4","Otosan 5"																		  },
+	{				"Sports 1",   "Sports 2",   "Sports 3",   "Sports 4",   "Sports 5"},
+	{			  "Academic 1", "Academic 2", "Academic 3", "Academic 4", "Academic 5"},
+	{				 "Imoto 1",    "Imoto 2",    "Imoto 3",    "Imoto 4",    "Imoto 5"},
+	{"I heard Google is jealous of your search history. They never thought someone could get so "
+"many answers wrong.",    "Oksan 2",
+     "Oksan 3",    "Oksan 4",
+     "Oksan 5"																		 },
+	{				"Kanojo 1",   "Kanojo 2",   "Kanojo 3",   "Kanojo 4",   "Kanojo 5"},
+	{				  "Jiji 1",     "Jiji 2",     "Jiji 3",     "Jiji 4",     "Jiji 5"},
+};
 
-typedef struct {
-	Rectangle rect;
-	const char *text;
-} TauntElement;
+static int screenWidth = 0;
+static int screenHeight = 0;
 
-typedef struct {
-	Rectangle rect;
-	const char *name;
-} Taunter;
+#define CHARACTER_SCALE 6
 
-static int menuButtonState = 0;
+// static int menuButtonState = 0;
 
 static int finishScreen = 0;
 
-// Define padding and margin values
-const int paddingX = 10;
-const int paddingY = 10;
-const int marginX = 30;
-const int marginY = 30;
-
-const int tauntR = 0;
-const int tauntC = 0;
-
-int tauntPadding = 32 / 52 * 2;
-
-const int overlayMarginX = 140;
-const int overlayMarginY = 120;
-
-// Define the question and options
-TauntElement question = {0};
-Taunter taunter = {0};
-TauntElement options[MAX_OPTIONS] = {0};
-const char *optionsText[MAX_OPTIONS] = {"Option 1", "Option 2", "Option 3", "Option 4"};
-
 void InitTauntScreen(void) {
 
-	const int screenWidth = GetScreenWidth();
+	screenWidth = GetScreenWidth();
+	screenHeight = GetScreenHeight();
 
-	// Define the question text
-	question.text = "What is the question?";
+	Image big = LoadImage("resources/Sprites/UI_Flat_Button_Medium_Press_02a1.png");
+	ImageResizeNN(&big, big.width * 3, big.height * 2);
+	bigButton = LoadTextureFromImage(big);
+	UnloadImage(big);
 
-	// Define the options text
-
-	// Calculate positions for question and options dynamically
-	int currentY = overlayMarginY + marginY;
-
-	taunter.rect.x = 2 * marginX + overlayMarginX;
-	taunter.rect.y = currentY;
-	taunter.rect.width = 300;
-	taunter.rect.height = 400;
-
-	// Calculate position for the question
-	question.rect.x = 16 * marginX + overlayMarginX;
-	question.rect.y = currentY + 10;
-	question.rect.width = screenWidth - 5 * (marginX + overlayMarginX);
-	question.rect.height = 180;
-
-	// Update currentY for options
-	currentY += question.rect.height + 2 * marginY;
-
-	// Calculate positions for options
-	int optionsBase = 15 * marginX + overlayMarginX;
-	for (int i = 0; i < MAX_OPTIONS; i++) {
-		options[i].rect.x =
-			optionsBase + (i % 2) * ((screenWidth - 3 * marginX) / 4 + 2 * paddingX);
-		options[i].rect.y = currentY + (i / 2) * (options[i].rect.height + paddingY);
-		options[i].rect.width = (screenWidth - 3 * (marginX + overlayMarginX)) / 4;
-		options[i].rect.height = 50;
-		currentY += (i % 2) * (options[i].rect.height + marginY);
-
-		options[i].text = optionsText[i];
-	}
-
-	Image questionBgImg = LoadImage("resources/Sprites/UI_Flat_Frame_02_Standard.png");
-	ImageResizeNN(&questionBgImg, question.rect.width, question.rect.height);
-	questionBgTex = LoadTextureFromImage(questionBgImg);
-	UnloadImage(questionBgImg);
-
-	Image optionsBgImg = LoadImage("resources/Sprites/UI_Flat_Button_Large_Press_01a2.png");
-	ImageResizeNN(&optionsBgImg, options[0].rect.width, options[0].rect.height);
-
-	optionsBgTex = LoadTextureFromImage(optionsBgImg);
-	UnloadImage(optionsBgImg);
+	Image scrollImg = LoadImage("resources/scroll_taunt.png");
+	ImageResizeNN(&scrollImg, scrollImg.width * 14, scrollImg.height * 12);
+	tauntScroll = LoadTextureFromImage(scrollImg);
+	UnloadImage(scrollImg);
 
 	Image characterImage = LoadImage("resources/Character_Combined.png");
-
-	ImageResizeNN(&characterImage, taunter.rect.width, taunter.rect.height);
-	Texture2D tauntCharacter = LoadTextureFromImage(characterImage);
+	ImageResizeNN(
+		&characterImage,
+		characterImage.width * CHARACTER_SCALE,
+		characterImage.height * CHARACTER_SCALE);
+	tauntCharacter = LoadTextureFromImage(characterImage);
 	UnloadImage(characterImage);
 
 	tauntCharacterWidth = tauntCharacter.width / 4;
@@ -111,36 +64,62 @@ void UpdateTauntScreen(void){
 };
 
 void DrawTauntScreen(void) {
+	// int characterIdx = rng_u64(time(0)) % 7;
+	int characterIdx = 0;
 
-	// Draw background texture
-	// DrawTexture(backgroundTexture, 0, 0, tint);
-	DrawRectangle(
-		overlayMarginX,
-		overlayMarginY,
-		GetScreenWidth() - 2 * overlayMarginX,
-		GetScreenHeight() - 2 * overlayMarginY,
-		Fade(BLACK, 0.7));
+	DrawRectangle(0, 0, screenWidth, screenHeight, Fade(BLACK, 0.6));
 
-	// Draw taunter character
-	DrawRectangleRec(taunter.rect, DARKGRAY);
-	(Vector2){taunter.rect.x, taunter.rect.y},
+	DrawTextureRec(
+		tauntScroll,
+		(Rectangle){0, 0, tauntScroll.width, tauntScroll.height},
+		(Vector2){screenWidth / 2 - tauntScroll.width / 2, screenHeight / 4 - 52},
+		WHITE);
 
-		DrawText(taunter.name, taunter.rect.x + paddingX, taunter.rect.y + paddingY, 20, WHITE);
-	// Draw question rectangle and text
-	DrawTexture(questionBgTex, question.rect.x, question.rect.y, WHITE);
+	DrawTextureRec(
+		tauntCharacter,
+		(Rectangle){
+			characterIdx % 4 * 32 * CHARACTER_SCALE + CHARACTER_SCALE,
+			characterIdx / 4 * 32 * CHARACTER_SCALE + CHARACTER_SCALE,
+			30 * CHARACTER_SCALE,
+			30 * CHARACTER_SCALE},
+		(Vector2){screenWidth / 4 + 50, screenHeight / 4 - 30 * CHARACTER_SCALE + 30},
+		WHITE);
 
-	DrawText(question.text, question.rect.x + paddingX, question.rect.y + paddingY, 20, WHITE);
+	const char *currTaunt =
+		"I heard Google is jealous of your \n\nsearch history. They never thought \n\n"
+		"someone could get so many answers \n\nwrong.";
 
-	// Draw option rectangles and text
-	for (int i = 0; i < MAX_OPTIONS; i++) {
-		// DrawRectangleRec(options[i].rect, LIGHTGRAY);
-		DrawTexture(optionsBgTex, options[i].rect.x, options[i].rect.y, WHITE);
-		DrawText(options[i].text, options[i].rect.x, options[i].rect.y, 20, BLACK);
-	}
+	// DrawText(taunts[characterIdx][2], screenWidth / 4 + 50, screenHeight / 2 - 50, 30, BLACK);
+	DrawText(currTaunt, screenWidth / 4 + 50, screenHeight / 2 - 90, 30, BLACK);
+
+	GuiSetStyle(DEFAULT, TEXT_SIZE, 35);
+	GuiImageButtonExTint(
+		(Rectangle){
+			screenWidth / 2 - bigButton.width / 4 * 5,
+			screenHeight / 4 - 52 + tauntScroll.height + 20,
+			bigButton.width,
+			bigButton.height},
+		"Retaliate",
+		bigButton,
+		(Rectangle){0, 0, bigButton.width, bigButton.height},
+		WHITE);
+
+	GuiImageButtonExTint(
+		(Rectangle){
+			screenWidth / 2 + bigButton.width / 4,
+			screenHeight / 4 - 52 + tauntScroll.height + 20,
+			bigButton.width,
+			bigButton.height},
+		"Ignore",
+		bigButton,
+		(Rectangle){0, 0, bigButton.width, bigButton.height},
+		WHITE);
 };
 
 void UnloadTauntScreen(void) {
-	UnloadTexture(backgroundTexture);
+	UnloadTexture(bigButton);
+	UnloadTexture(tauntCharacter);
+	UnloadTexture(tauntScroll);
 };
 
 int FinishTauntScreen(void) {
