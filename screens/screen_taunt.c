@@ -126,9 +126,9 @@ bool DrawTauntScreen(void) {
 
 	DrawText(
 		taunts[characterIdx][tauntIdx],
-		screenWidth / 4 + 50,
-		screenHeight / 2 - 50,
-		20,
+		screenWidth / 4 + 90,
+		screenHeight / 2 - 65,
+		23,
 		BLACK);
 	// DrawText(currTaunt, screenWidth / 4 + 50, screenHeight / 2 - 90, 30, BLACK);
 
