@@ -38,6 +38,8 @@ static Camera2D camera = {0};
 Texture2D grassland = {0};
 Texture2D household = {0};
 
+Music oof = {0};
+
 int gGameLevel = 1;
 
 Rectangle frameRec = {0};
@@ -140,7 +142,7 @@ void InitGameScreen(void) {
 	for (int i = 0; i < MAX_CHAPPAL_TYPES; i++) {
 		Image chap = LoadImage(chappalSources[i]);
 		// TODO: resize chappal assets
-		ImageResizeNN(&chap, chap.width * 0.25f, chap.height * 0.25f);
+		ImageResizeNN(&chap, chap.width * 2, chap.height * 2);
 		chappalTextures[i] = LoadTextureFromImage(chap);
 		UnloadImage(chap);
 	}
@@ -149,6 +151,12 @@ void InitGameScreen(void) {
 	chappalList->head = NULL;
 	// chappal = CreateChappal(chappalTexture, playerPosition);
 	// End Testing
+
+	// Loading Audio
+	InitAudioDevice();
+
+	oof = LoadMusicStream("resources/audio/oof.mp3");
+	oof.looping = false;
 
 	// Loading Textures
 	Image scroll = LoadImage("resources/scroll.png");
@@ -457,6 +465,8 @@ void UpdateGameScreen(void) {
 			}
 
 		} else {
+			UpdateMusicStream(oof);
+
 			framesCounter++;
 
 			if (framesCounter >= (60 / framesSpeed)) {
@@ -563,11 +573,14 @@ void UpdateGameScreen(void) {
 					20};
 				if (CheckCollisionRecs(playerRec, chappalRec)) {
 					if (node->chappal->type == KHANA) {
-						lives++;
+						lives += 5;
 						if (lives > MAX_LIVES)
 							lives = MAX_LIVES;
-					} else
+					} else {
+						StopMusicStream(oof);
+						PlayMusicStream(oof);
 						lives--;
+					}
 					Node* temp = node;
 					node = node->next;
 					DeleteChappalNode(temp);
@@ -590,7 +603,6 @@ void UpdateGameScreen(void) {
 				} else {
 					node = node->next;
 				}
-
 			}
 		}
 	}
@@ -1022,6 +1034,8 @@ void UnloadGameScreen(void) {
 	UnloadTexture(button9);
 	UnloadTexture(button);
 	UnloadTexture(player);
+	UnloadMusicStream(oof);
+	CloseAudioDevice();
 }
 
 // This function returns whether the game should end or not.

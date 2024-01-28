@@ -45,7 +45,10 @@ Chappal* CreateChappal(Texture2D textures[], Vector2 target) {
 	chappal->direction = direction;
 	// chappal->texture = texture;
 	// chappal->type = random type between 1 to n
-	int randNum = rng_u64(rng_u64(time(NULL))) % 100;
+
+	// int randNum = rng_u64(rng_u64(time(NULL))) % 100;
+
+	int randNum = GetRandomValue(1, 100);
 
 	if (randNum < 5)
 		chappal->type = KHANA;

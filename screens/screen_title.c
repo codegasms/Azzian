@@ -13,8 +13,17 @@ static Texture2D bigButton = {0};
 static Texture2D bigButtonPressed = {0};
 static Texture2D smallButton = {0};
 static Texture2D smallButtonPressed = {0};
-
 static Texture2D scrollPaper = {0};
+
+static Music vboom = {0};
+static Music haiya = {0};
+static Music quack = {0};
+static Music titleOST = {0};
+static Music outro = {0};
+// Chin Chen Han Ji
+static Music cchj = {0};
+static Music wrongBuzzer = {0};
+static Music correctBuzzer = {0};
 
 static int menuButtonState = 0;
 
@@ -70,6 +79,26 @@ void InitTitleScreen(void) {
 	ImageResizeNN(&scroll, scroll.width * 0.6, scroll.height * 0.6);
 	scrollPaper = LoadTextureFromImage(scroll);
 
+	InitAudioDevice();
+
+	quack = LoadMusicStream("resources/audio/quack.mp3");
+	quack.looping = false;
+	haiya = LoadMusicStream("resources/audio/haiya.mp3");
+	haiya.looping = false;
+	vboom = LoadMusicStream("resources/audio/vboom.mp3");
+	SetMusicVolume(vboom, 0.5f);
+	vboom.looping = false;
+	wrongBuzzer = LoadMusicStream("resources/audio/wrong.mp3");
+	SetMusicVolume(wrongBuzzer, 0.1f);
+	wrongBuzzer.looping = false;
+	correctBuzzer = LoadMusicStream("resources/audio/correct.mp3");
+	correctBuzzer.looping = false;
+	cchj = LoadMusicStream("resources/audio/chingchenghanji.mp3");
+	outro = LoadMusicStream("resources/audio/outro.mp3");
+	titleOST = LoadMusicStream("resources/audio/titleOST.mp3");
+
+	PlayMusicStream(titleOST);
+
 	UnloadImage(game);
 	UnloadImage(big);
 	UnloadImage(big2);
@@ -79,6 +108,15 @@ void InitTitleScreen(void) {
 }
 
 void UpdateTitleScreen(void) {
+	UpdateMusicStream(quack);
+	UpdateMusicStream(haiya);
+	UpdateMusicStream(vboom);
+	UpdateMusicStream(titleOST);
+	UpdateMusicStream(outro);
+	UpdateMusicStream(cchj);
+	UpdateMusicStream(wrongBuzzer);
+	UpdateMusicStream(correctBuzzer);
+
 	frameCounter++;
 	if (frameCounter >= frameDelay) {
 		// Move to next frame
@@ -135,6 +173,8 @@ void DrawTitleScreen(void) {
 			((menuButtonState >> 0) & 1) == 1 ? bigButtonPressed : bigButton,
 			(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 	    menuType == MENU_MAIN) {
+		StopMusicStream(vboom);
+		PlayMusicStream(vboom);
 		menuButtonState = 0;
 		menuButtonState |= 1 << 0;
 		finishScreen = 1;
@@ -153,6 +193,8 @@ void DrawTitleScreen(void) {
 			((menuButtonState >> 1) & 1) == 1 ? bigButtonPressed : bigButton,
 			(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 	    menuType == MENU_MAIN) {
+		StopMusicStream(vboom);
+		PlayMusicStream(vboom);
 		menuButtonState = 0;
 		menuButtonState |= 1 << 1;
 		menuType = MENU_DIFFICULTY;
@@ -171,6 +213,8 @@ void DrawTitleScreen(void) {
 			((menuButtonState >> 2) & 1) == 1 ? bigButtonPressed : bigButton,
 			(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 	    menuType == MENU_MAIN) {
+		StopMusicStream(vboom);
+		PlayMusicStream(vboom);
 		menuButtonState = 0;
 		menuButtonState |= 1 << 2;
 		menuType = MENU_HELP;
@@ -188,6 +232,10 @@ void DrawTitleScreen(void) {
 			((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 			(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 	    menuType == MENU_MAIN) {
+		StopMusicStream(vboom);
+		PlayMusicStream(vboom);
+		PauseMusicStream(titleOST);
+		PlayMusicStream(outro);
 		menuButtonState = 0;
 		menuButtonState |= 1 << 3;
 		menuType = MENU_EXIT;
@@ -202,6 +250,8 @@ void DrawTitleScreen(void) {
 			((menuButtonState >> 4) & 1) == 1 ? smallButtonPressed : smallButton,
 			(Rectangle){0, 0, smallButton.width, smallButton.height}) &&
 	    menuType == MENU_MAIN) {
+		StopMusicStream(haiya);
+		PlayMusicStream(haiya);
 		menuButtonState = 0;
 		menuButtonState |= 1 << 4;
 		menuType = MENU_LANG;
@@ -219,6 +269,10 @@ void DrawTitleScreen(void) {
 			((menuButtonState >> 5) & 1) == 1 ? smallButtonPressed : smallButton,
 			(Rectangle){0, 0, smallButton.width, smallButton.height}) &&
 	    menuType == MENU_MAIN) {
+		StopMusicStream(vboom);
+		PlayMusicStream(vboom);
+		PauseMusicStream(titleOST);
+		PlayMusicStream(cchj);
 		menuButtonState = 0;
 		menuButtonState |= 1 << 5;
 		menuType = MENU_CREDITS;
@@ -258,6 +312,8 @@ void DrawTitleScreen(void) {
 				(Rectangle){0, 0, bigButton.width, bigButton.height},
 				difficultyFade) &&
 		    menuType == MENU_DIFFICULTY) {
+			StopMusicStream(wrongBuzzer);
+			PlayMusicStream(wrongBuzzer);
 		}
 		if (GuiImageButtonExTint(
 				(Rectangle){
@@ -270,6 +326,8 @@ void DrawTitleScreen(void) {
 				(Rectangle){0, 0, bigButton.width, bigButton.height},
 				difficultyFade) &&
 		    menuType == MENU_DIFFICULTY) {
+			StopMusicStream(wrongBuzzer);
+			PlayMusicStream(wrongBuzzer);
 		}
 		if (GuiImageButtonExTint(
 				(Rectangle){
@@ -282,6 +340,8 @@ void DrawTitleScreen(void) {
 				(Rectangle){0, 0, bigButton.width, bigButton.height},
 				difficultyFade) &&
 		    menuType == MENU_DIFFICULTY) {
+			StopMusicStream(wrongBuzzer);
+			PlayMusicStream(wrongBuzzer);
 		}
 		if (GuiImageButtonEx(
 				(Rectangle){
@@ -293,6 +353,8 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_DIFFICULTY) {
+			StopMusicStream(correctBuzzer);
+			PlayMusicStream(correctBuzzer);
 			menuButtonState = 0;
 			menuType = MENU_MAIN;
 		}
@@ -327,6 +389,8 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_HELP) {
+			StopMusicStream(vboom);
+			PlayMusicStream(vboom);
 			menuButtonState = 0;
 			menuType = MENU_MAIN;
 		}
@@ -340,9 +404,13 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_HELP) {
+			StopMusicStream(vboom);
+			PlayMusicStream(vboom);
 			asianHelp += 1;
 
 			if (asianHelp == 2) {
+				StopMusicStream(vboom);
+				PlayMusicStream(vboom);
 				asianHelp = 0;
 				menuButtonState = 0;
 				menuType = MENU_MAIN;
@@ -396,6 +464,10 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_EXIT) {
+			StopMusicStream(vboom);
+			PlayMusicStream(vboom);
+			StopMusicStream(outro);
+			ResumeMusicStream(titleOST);
 			menuButtonState = 0;
 			menuType = MENU_MAIN;
 		}
@@ -468,6 +540,8 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_LANG) {
+			StopMusicStream(vboom);
+			PlayMusicStream(vboom);
 			menuButtonState = 0;
 			menuType = MENU_MAIN;
 		}
@@ -519,6 +593,10 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_CREDITS) {
+			StopMusicStream(quack);
+			PlayMusicStream(quack);
+			StopMusicStream(cchj);
+			ResumeMusicStream(titleOST);
 			menuButtonState = 0;
 			menuType = MENU_MAIN;
 		}
@@ -533,6 +611,10 @@ void DrawTitleScreen(void) {
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_CREDITS) {
+			StopMusicStream(vboom);
+			PlayMusicStream(vboom);
+			StopMusicStream(cchj);
+			ResumeMusicStream(titleOST);
 			menuButtonState = 0;
 			menuType = MENU_MAIN;
 		}
@@ -547,6 +629,15 @@ void UnloadTitleScreen(void) {
 	UnloadTexture(smallButton);
 	UnloadTexture(smallButtonPressed);
 	UnloadTexture(scrollPaper);
+	UnloadMusicStream(quack);
+	UnloadMusicStream(haiya);
+	UnloadMusicStream(vboom);
+	UnloadMusicStream(titleOST);
+	UnloadMusicStream(outro);
+	UnloadMusicStream(cchj);
+	UnloadMusicStream(wrongBuzzer);
+	UnloadMusicStream(correctBuzzer);
+	CloseAudioDevice();
 };
 
 int FinishTitleScreen(void) {
