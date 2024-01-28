@@ -964,12 +964,6 @@ void UpdateGameScreen(void) {
 		// End Testing
 
 		EndMode2D();
-
-		if (randomSpawn) {
-			DrawTauntScreen();
-		}
-
-		// Implement Dialog Box
 	}
 
 	// Unloads the textures. I mean what else did you expect from the name?
@@ -985,7 +979,6 @@ void UpdateGameScreen(void) {
 			node = node->next;
 			DeleteChappalNode(temp);
 		}
-		UnloadTexture(scrolls);
 		UnloadTexture(heart);
 		UnloadTexture(scoreBoard);
 		UnloadTexture(endScreen);
