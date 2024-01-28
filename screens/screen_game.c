@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 extern int characterIdx;
 extern int tauntIdx;
@@ -698,6 +699,7 @@ void UpdateTerrain(void) {
 			Color color = colors[i * cols + j];
 			assert(color.r == color.g && color.r == color.b && color.a == 255);
 			int intensity = color.r;
+			gTerrain[idx(i, j, cols)] = intensity;
 
 			if (intensity < 50) {
 				gTerrain[idx(i, j, cols)] = 0;
@@ -730,14 +732,46 @@ int ObstacleAt(int x, int y) {
 void UpdateObstacles(void) {
 	int rows = gRows, cols = gCols;
 	int x1 = gStartX, y1 = gStartY;
+	memset(gObstacles, -1, gRows * gCols * sizeof(int));
+
+	int saveProbability = OBSTACLE_PROBABILITY;
+	OBSTACLE_PROBABILITY = 0.01;
+	for (int dy = 3; dy >= 1; --dy) {
+		for (int dx = 3; dx >= 1; --dx) {
+			if (dy == 1 && dx == 1)
+				continue;
+
+			for (int i = 0; i < rows; ++i) {
+				for (int j = 0; j < cols; ++j) {
+					int x = x1 + j;
+					int y = y1 + i;
+
+					int vx = CellIdx(x, dx);
+					int vy = CellIdx(y, dy);
+
+					int obstacleType = ObstacleAt(vx * dx * dx, vy * dy * dy);
+					if (obstacleType < 0) {
+						continue;
+					}
+
+					gObstacles[idx(i, j, cols)] = (dy << 2 | dx) << 4;
+				}
+			}
+		}
+	}
+
+	OBSTACLE_PROBABILITY = 0.05;
 
 	for (int i = 0; i < rows; ++i) {
 		for (int j = 0; j < cols; ++j) {
+			if (gObstacles[idx(i, j, cols)] != -1)
+				continue;
+
 			int x = x1 + j;
 			int y = y1 + i;
 
 			int terrainType = gTerrain[idx(i, j, cols)];
-			int obstacleType = ObstacleAt(x, y) % 4;
+			int obstacleType = ObstacleAt(y, x) % 4;
 
 			if (terrainType == 0 || obstacleType < 0) {
 				gObstacles[idx(i, j, cols)] = -1;
@@ -748,6 +782,8 @@ void UpdateObstacles(void) {
 			gObstacles[idx(i, j, cols)] = obstacleType;
 		}
 	}
+
+	OBSTACLE_PROBABILITY = saveProbability;
 }
 
 void DrawTerrain(void) {
@@ -784,8 +820,8 @@ void DrawObstacles(void) {
 	int rows = gRows, cols = gCols;
 	int x1 = gStartX, y1 = gStartY;
 
-	for (int i = 0; i < rows; ++i) {
-		for (int j = 0; j < cols; ++j) {
+	for (int i = 1; i < rows - 1; ++i) {
+		for (int j = 1; j < cols - 1; ++j) {
 			int x = x1 + j;
 			int y = y1 + i;
 
@@ -794,51 +830,86 @@ void DrawObstacles(void) {
 				continue;
 			}
 
-			int terrainType = gTerrain[idx(i, j, cols)];
-			int oi = 0, oj = 0;
+			if (obstacleType >> 4) {
+				int oi = 0, oj = 0;
+				int vx = CellIdx(x, 3);
+				int vy = CellIdx(y, 3);
 
-			// clang-format off
-			switch (terrainType) {
-				default:
-				case 1: {
-					switch (obstacleType) {
-						default:
-						case 0: oi = 12; oj =  6; break;
-						case 1: oi = 12; oj = 15; break;
-						case 2: oi = 11; oj = 12; break;
-						case 3: oi = 11; oj = 13; break;
+				const int ci = 7;
+				const int cj = 10 + 3 * (rng_u64((uint64_t)vx << 32 | vy) % 3);
+
+				// clang-format off
+				if (gObstacles[idx(i - 1, j, cols)] != -1) oi |= 2;
+				if (gObstacles[idx(i + 1, j, cols)] != -1) oi |= 1;
+				if (gObstacles[idx(i, j - 1, cols)] != -1) oj |= 2;
+				if (gObstacles[idx(i, j + 1, cols)] != -1) oj |= 1;
+
+				const float P = playerSpriteWidth / 2.0f;
+				assert(playerSpriteWidth == playerSpriteHeight);
+
+				int fuck = (oj & 2) | (oi >> 1 & 1);
+				Rectangle r00 = {.x = 16 * 4 * cj + P * ((fuck >> 1) ? 2 : 0), .y = 16 * 4 * ci + P * ((fuck & 1) ? 2 : 0), .width = 16 * 4 / 2.0f, .height = 16 * 4 / 2.0f};
+				DrawTextureRec(grassland, r00, (Vector2){x * playerSpriteWidth, y * playerSpriteHeight}, WHITE);
+
+				fuck = (oj & 2) | (oi & 1);
+				Rectangle r01 = {.x = 16 * 4 * cj + P * ((fuck >> 1) ? 2 : 0), .y = 16 * 4 * ci + P * ((fuck & 1) ? 3 : 5), .width = 16 * 4 / 2.0f, .height = 16 * 4 / 2.0f};
+				DrawTextureRec(grassland, r01, (Vector2){x * playerSpriteWidth, y * playerSpriteHeight + P}, WHITE);
+
+				fuck = (oj & 1) << 1 | (oi >> 1 & 1);
+				Rectangle r10 = {.x = 16 * 4 * cj + P * ((fuck >> 1) ? 3 : 5), .y = 16 * 4 * ci + P * ((fuck & 1) ? 2 : 0), .width = 16 * 4 / 2.0f, .height = 16 * 4 / 2.0f};
+				DrawTextureRec(grassland, r10, (Vector2){x * playerSpriteWidth + P, y * playerSpriteHeight}, WHITE);
+
+				fuck = (oj & 1) << 1 | (oi & 1);
+				Rectangle r11 = {.x = 16 * 4 * cj + P * ((fuck >> 1) ? 3 : 5), .y = 16 * 4 * ci + P * ((fuck & 1) ? 3 : 5), .width = 16 * 4 / 2.0f, .height = 16 * 4 / 2.0f};
+				DrawTextureRec(grassland, r11, (Vector2){x * playerSpriteWidth + P, y * playerSpriteHeight + P}, WHITE);
+				// clang-format on
+			} else {
+				int terrainType = gTerrain[idx(i, j, cols)];
+				int oi = 0, oj = 0;
+
+				// clang-format off
+				switch (terrainType) {
+					default:
+					case 1: {
+						switch (obstacleType) {
+							default:
+							case 0: oi = 12; oj =  6; break;
+							case 1: oi = 12; oj = 15; break;
+							case 2: oi = 11; oj = 12; break;
+							case 3: oi = 11; oj = 13; break;
+						}
+						break;
 					}
-					break;
+					case 2:
+						switch (obstacleType) {
+							default:
+							case 0: oi = 12; oj = 10; break;
+							case 1: oi = 12; oj = 11; break;
+							case 2: oi = 12; oj = 12; break;
+							case 3: oi = 13; oj = 24; break;
+						}
+						break;
+					case 3: {
+						switch (obstacleType) {
+							default:
+							case 0: oi = 13; oj = 2; break;
+							case 1: oi = 13; oj = 3; break;
+							case 2: oi = 13; oj = 5; break;
+							case 3: oi = 13; oj = 6; break;
+						}
+						break;
+					}
 				}
-				case 2:
-					switch (obstacleType) {
-						default:
-						case 0: oi = 12; oj = 10; break;
-						case 1: oi = 12; oj = 11; break;
-						case 2: oi = 12; oj = 12; break;
-						case 3: oi = 13; oj = 24; break;
-					}
-					break;
-				case 3: {
-					switch (obstacleType) {
-						default:
-						case 0: oi = 13; oj = 2; break;
-						case 1: oi = 13; oj = 3; break;
-						case 2: oi = 13; oj = 5; break;
-						case 3: oi = 13; oj = 6; break;
-					}
-					break;
-				}
+				// clang-format on
+
+				Rectangle obstacleRect =
+					{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
+				DrawTextureRec(
+					grassland,
+					obstacleRect,
+					(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+					WHITE);
 			}
-			// clang-format on
-
-			Rectangle obstacleRect =
-				{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
-			DrawTextureRec(
-				grassland,
-				obstacleRect,
-				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
-				WHITE);
 		}
 	}
 }
