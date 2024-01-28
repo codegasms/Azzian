@@ -1184,7 +1184,7 @@ void DrawGameScreen(void) {
 			innerVoiceUC[innerThoughtIdx],
 			GetScreenWidth() - scrolls.width + 100,
 			GetRenderHeight() - scrolls.height + 35,
-			15,
+			17,
 			BLACK);
 	}
 
