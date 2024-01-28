@@ -191,11 +191,26 @@ void InitGameScreen(void) {
 		player.width / 10.0f,
 		player.height / 20.0f};
 
-	// Testing
-	// chappalTexture = LoadTexture("resources/book.png");
-
 	for (int i = 0; i < MAX_CHAPPAL_TYPES; i++) {
-		Image chap = LoadImage(chappalSources[i]);
+		Image chap = {0};
+
+		// TODO: add resource links
+		switch (i) {
+		case 0:
+			chap = LoadImage("resources/burger.png");
+			break;
+		case 1:
+			chap = LoadImage("resources/chappal_1.png");
+			break;
+		case 2:
+			chap = LoadImage("resources/chappal_2.png");
+			break;
+		default:
+		case 3:
+			chap = LoadImage("resources/chappal_1.png");
+			break;
+		}
+
 		// TODO: resize chappal assets
 		ImageResizeNN(&chap, chap.width * 2, chap.height * 2);
 		chappalTextures[i] = LoadTextureFromImage(chap);
@@ -204,10 +219,8 @@ void InitGameScreen(void) {
 
 	chappalList = (ChappalList*)malloc(sizeof(ChappalList));
 	chappalList->head = NULL;
-	// chappal = CreateChappal(chappalTexture, playerPosition);
-	// End Testing
 
-	// Loading Audio
+	// Loading audio
 	InitAudioDevice();
 
 	oof = LoadMusicStream("resources/audio/oof.mp3");
@@ -221,7 +234,7 @@ void InitGameScreen(void) {
 	SetMusicVolume(gameOST, 0.2f);
 	PlayMusicStream(gameOST);
 
-	// Loading Textures
+	// Loading textures
 	Image scroll = LoadImage("resources/scroll.png");
 	ImageResizeNN(&scroll, scroll.width * 10, scroll.height * 6);
 	scrolls = LoadTextureFromImage(scroll);
@@ -232,7 +245,9 @@ void InitGameScreen(void) {
 	mainCharacter = LoadTextureFromImage(mcImage);
 	UnloadImage(mcImage);
 
-	background = LoadTexture("resources/background.png");
+	Image backgroundImage = LoadImage("resources/background.png");
+	background = LoadTextureFromImage(backgroundImage);
+	UnloadImage(backgroundImage);
 
 	Image menuImage = LoadImage("resources/Sprites/UI_Flat_Frame_01_Standard.png");
 	ImageResizeNN(&menuImage, menuImage.width * 8, menuImage.height * 6);
@@ -259,7 +274,9 @@ void InitGameScreen(void) {
 	loser = LoadTextureFromImage(menuImage);
 	UnloadImage(menuImage);
 
-	gamePaused = LoadTexture("resources/game_paused.png");
+	Image gamePausedImage = LoadImage("resources/game_paused.png");
+	gamePaused = LoadTextureFromImage(gamePausedImage);
+	UnloadImage(gamePausedImage);
 
 	Image buttonImage = LoadImage("resources/Sprites/UI_Flat_Button_Large_Lock_01a1.png");
 	ImageResizeNN(&buttonImage, buttonImage.width * 2, buttonImage.height * 2);
@@ -354,11 +371,9 @@ void InitGameScreen(void) {
 	playerSpriteHeight = player.height / 20;
 	assert(playerSpriteWidth == 16 * 4 && playerSpriteHeight == 16 * 4);
 
-	// Initialize player position
 	playerPosition.x = 0.0f;
 	playerPosition.y = 0.0f;
 
-	// Getting width and height
 	WIDTH = GetScreenWidth();
 	HEIGHT = GetScreenHeight();
 
@@ -390,7 +405,6 @@ Node* createNode(Chappal* chappal) {
 }
 
 void SpawnChappal() {
-	// pass chappalTextures
 	Chappal* chappal = CreateChappal(
 		chappalTextures,
 		(Vector2){
@@ -463,14 +477,6 @@ void UpdateGameScreen(void) {
 		gGameLevel = (gGameLevel == 1) ? 2 : 1;
 		IncreaseSpeed();
 	}
-	// Thinking of a way to implement a simple transition between levels
-	// 	if (score % 100 > 95 && score != 0) {
-	// 	// score += 1;
-	// 	gGameLevel = (gGameLevel == 1) ? 2 : 1;
-	// 	if (score % 100 == 0) {
-	// 		IncreaseSpeed();
-	// 	}
-	// }
 
 	if (!randomSpawn) {
 		if (IsKeyPressed(KEY_ESCAPE)) {
@@ -731,9 +737,9 @@ uint64_t rng_u64(uint64_t seed) {
 
 /// Generate a random double in range [0, 1].
 double rng_f64(uint64_t seed) {
-	static const double uint64_t_max = (double)0xffffffffffffffffULL;
+	static const double u64_max = (double)0xffffffffffffffffULL;
 	const uint64_t gen = rng_u64(seed);
-	return (double)gen / uint64_t_max;
+	return (double)gen / u64_max;
 }
 
 int idx(int i, int j, int n) {
@@ -1007,6 +1013,7 @@ void DrawGameScreen(void) {
 			playerPosition,
 			WHITE);
 	}
+
 	// Draw chappals
 	Node* node = chappalList->head;
 	int counter = 0;
@@ -1016,7 +1023,7 @@ void DrawGameScreen(void) {
 		counter++;
 	}
 
-	// _Static_assert(MAX_LIVES % 4 == 0, "MAX_LIVES must be a multiple of 4");
+	_Static_assert(MAX_LIVES % 4 == 0, "MAX_LIVES must be a multiple of 4");
 	const int HEARTS = (MAX_LIVES + 3) / 4;
 	for (int i = 0; i < HEARTS; ++i) {
 		int rem = lives - i * 4;
@@ -1042,19 +1049,21 @@ void DrawGameScreen(void) {
 	DrawFPS(playerPosition.x - WIDTH / 2.0f + 40, playerPosition.y - HEIGHT / 2.0f + 40);
 
 	if (paused) {
-		// Draw fade background.
+		// Draw fade background
 		DrawRectangle(
 			playerPosition.x - (WIDTH / 2.0f) + (playerSpriteWidth / 2.0f),
 			playerPosition.y - (HEIGHT / 2.0f) + (playerSpriteHeight / 2.0f),
 			WIDTH,
 			HEIGHT,
 			ColorAlpha(BLACK, 0.3));
+
 		// Draw blue board
 		DrawTexture(
 			menuScreen,
 			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2.0f),
 			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2.0f),
 			(Color){175, 175, 175, 225});
+
 		// Draw game paused text
 		DrawTexture(
 			gamePaused,
@@ -1069,6 +1078,7 @@ void DrawGameScreen(void) {
 		} else if (btnState_1 == 2) {
 			DrawTexture(button3, pauseBtn1Rec.x, pauseBtn1Rec.y, WHITE);
 		}
+
 		// DrawRectangleRec(pauseBtn1Rec, RED);
 		if (btnState_2 == 0) {
 			DrawTexture(button4, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
@@ -1085,31 +1095,33 @@ void DrawGameScreen(void) {
 			WIDTH,
 			HEIGHT,
 			ColorAlpha(BLACK, 0.3));
+
 		// Draw game over board
 		DrawTexture(
 			endScreen,
-			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2),
-			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2),
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2.0f),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2.0f),
 			(Color){175, 175, 175, 225});
+
 		// Draw game over text
 		DrawTexture(
 			gameOverTexture,
-			playerPosition.x + (playerSpriteWidth / 2.0f) - (gameOverTexture.width / 2),
-			playerPosition.y + (playerSpriteHeight / 2.0f) - (gameOverTexture.height / 2) - 200,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (gameOverTexture.width / 2.0f),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (gameOverTexture.height / 2.0f) - 200,
 			WHITE);
 
 		// Draw skill issue text
 		DrawTexture(
 			skillIssue,
-			playerPosition.x + (playerSpriteWidth / 2.0f) - (skillIssue.width / 2),
-			playerPosition.y + (playerSpriteHeight / 2.0f) - (skillIssue.height / 2) + 45,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (skillIssue.width / 2.0f),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (skillIssue.height / 2.0f) + 45,
 			WHITE);
 
 		// Draw loser text
 		DrawTexture(
 			loser,
-			playerPosition.x + (playerSpriteWidth / 2.0f) - (loser.width / 2),
-			playerPosition.y + (playerSpriteHeight / 2.0f) - (loser.height / 2) - 100,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (loser.width / 2.0f),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (loser.height / 2.0f) - 100,
 			WHITE);
 
 		// Draw score
@@ -1143,7 +1155,7 @@ void DrawGameScreen(void) {
 		}
 	}
 
-	// Testing
+	// Start testing
 	if (debug) {
 		DrawRectangleRec(playerRec, RED);
 		DrawText(
@@ -1165,7 +1177,7 @@ void DrawGameScreen(void) {
 			20,
 			BLACK);
 	}
-	// End Testing
+	// End testing
 
 	EndMode2D();
 
@@ -1183,10 +1195,10 @@ void DrawGameScreen(void) {
 
 		DrawTextureRec(
 			mainCharacter,
-			(Rectangle){7 % 4 * 32 * 4 + 4, 7 / 4 * 32 * 4 + 4, -30 * 4, 30 * 4},
+			(Rectangle){(7 % 4) * 32 * 4 + 4, (float)(7 / 4) * 32 * 4 + 4, -30 * 4, 30 * 4},
 			(Vector2){
-				GetScreenWidth() - mainCharacter.width / 4 - 10,
-				GetRenderHeight() - scrolls.height - mainCharacter.height / 2 + 20},
+				GetScreenWidth() - mainCharacter.width / 4.0f - 10,
+				GetRenderHeight() - scrolls.height - mainCharacter.height / 2.0f + 20},
 			WHITE);
 
 		DrawText(
@@ -1210,19 +1222,18 @@ void DrawGameScreen(void) {
 	innerCounter++;
 }
 
-// Unloads the textures. I mean what else did you expect from the name?
 void UnloadGameScreen(void) {
-	// Delete chappals
-	// UnloadTexture(chappalTexture);
 	for (int i = 0; i < MAX_CHAPPAL_TYPES; i++) {
 		UnloadTexture(chappalTextures[i]);
 	}
+
 	Node* node = chappalList->head;
 	while (node != NULL) {
 		Node* temp = node;
 		node = node->next;
 		DeleteChappalNode(temp);
 	}
+
 	UnloadTexture(scrolls);
 	UnloadTexture(mainCharacter);
 	UnloadTexture(heart);
@@ -1246,10 +1257,12 @@ void UnloadGameScreen(void) {
 	UnloadTexture(button);
 	UnloadTexture(player);
 	UnloadTexture(sofaset);
+
 	UnloadMusicStream(oof);
 	UnloadMusicStream(gameOST);
 	UnloadMusicStream(click);
 	UnloadMusicStream(yom);
+
 	CloseAudioDevice();
 }
 

@@ -9,13 +9,6 @@
 
 #define MAX_CHAPPAL_TYPES 4
 
-// TODO: add resource links
-static const char *chappalSources[MAX_CHAPPAL_TYPES] = {
-	"resources/burger.png",
-	"resources/chappal_1.png",
-	"resources/chappal_2.png",
-	"resources/chappal_1.png"};
-
 typedef enum {
 	KHANA = 0,
 	DANDA,

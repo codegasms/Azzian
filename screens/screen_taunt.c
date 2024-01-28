@@ -1,6 +1,5 @@
 #include "raygui.h"
 #include "screens.h"
-#include <math.h>
 #include <raylib.h>
 
 #include <stdio.h>
@@ -167,9 +166,6 @@ bool DrawTauntScreen(void) {
 };
 
 int deltaHealth(int characterIdx, int responseType) {
-	// Response type 1 = Retaliate
-	// Response type 2 = Ignore
-
 	if (characterIdx == 5) {
 		return 10;
 	}
@@ -206,6 +202,6 @@ void UnloadTauntScreen(void) {
 	UnloadTexture(tauntScroll);
 };
 
-int FinishTauntScreen(void){
-	// return finishScreen;
-};
+int FinishTauntScreen(void) {
+	return 0;
+}
