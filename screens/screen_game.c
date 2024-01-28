@@ -1189,27 +1189,56 @@ void UpdateTerrainHome(void) {
 void UpdateObstaclesHome(void) {
 	int rows = gRows, cols = gCols;
 	int x1 = gStartX, y1 = gStartY;
+	memset(gObstacles, -1, gRows * gCols * sizeof(int));
+
+	int saveProbability = OBSTACLE_PROBABILITY;
+	OBSTACLE_PROBABILITY = 0.03;
+	for (int dy = 3; dy >= 3; --dy) {
+		for (int dx = 3; dx >= 3; --dx) {
+			if (dy == 1 && dx == 1)
+				continue;
+
+			for (int i = 0; i < rows; ++i) {
+				for (int j = 0; j < cols; ++j) {
+					int x = x1 + j;
+					int y = y1 + i;
+
+					int vx = CellIdx(x, dx);
+					int vy = CellIdx(y, dy);
+
+					int obstacleType = ObstacleAt(vx * dx * dx, vy * dy * dy);
+					if (obstacleType < 0) {
+						continue;
+					}
+
+					gObstacles[idx(i, j, cols)] = (dy << 2 | dx) << 8;
+				}
+			}
+		}
+	}
+
+	OBSTACLE_PROBABILITY = 0.05;
 
 	for (int i = 0; i < rows; ++i) {
 		for (int j = 0; j < cols; ++j) {
+			if (gObstacles[idx(i, j, cols)] != -1)
+				continue;
+
 			int x = x1 + j;
 			int y = y1 + i;
 
-			int terrainType = gTerrain[idx(i, j, cols)];
-			int saveProbability = OBSTACLE_PROBABILITY;
-			OBSTACLE_PROBABILITY = 0.06;
-			int obstacleType = ObstacleAt(x, y);
-			OBSTACLE_PROBABILITY = saveProbability;
+			int obstacleType = ObstacleAt(y, x);
 
 			if (obstacleType < 0) {
 				gObstacles[idx(i, j, cols)] = -1;
 				continue;
 			}
 
-			assert(terrainType >= 0 && terrainType < 3);
 			gObstacles[idx(i, j, cols)] = obstacleType % 20;
 		}
 	}
+
+	OBSTACLE_PROBABILITY = saveProbability;
 }
 
 void DrawTerrainHome(void) {
@@ -1256,17 +1285,37 @@ void DrawObstaclesHome(void) {
 				continue;
 			}
 
-			// int terrainType = gTerrain[idx(i, j, cols)];
-			int oi = 23 + obstacleType / 8;
-			int oj = obstacleType % 8;
+			if (obstacleType >> 8) {
+				int vx = CellIdx(x, 3);
+				int vy = CellIdx(y, 3);
+				assert(x >= vx * 3);
+				assert(y >= vy * 3);
+				int dx = x - vx * 3;
+				int dy = y - vy * 3;
+				assert(dx < 3);
+				assert(dy < 3);
+				int oj = dx;
+				int oi = 18 + dy;
 
-			Rectangle obstacleRect =
-				{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
-			DrawTextureRec(
-				household,
-				obstacleRect,
-				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
-				WHITE);
+				Rectangle obstacleRect =
+					{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
+				DrawTextureRec(
+					household,
+					obstacleRect,
+					(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+					WHITE);
+			} else {
+				int oi = 23 + obstacleType / 8;
+				int oj = obstacleType % 8;
+
+				Rectangle obstacleRect =
+					{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
+				DrawTextureRec(
+					household,
+					obstacleRect,
+					(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+					WHITE);
+			}
 		}
 	}
 }
