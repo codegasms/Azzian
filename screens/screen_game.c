@@ -13,7 +13,7 @@ extern int characterIdx;
 extern int tauntIdx;
 
 #define MAX_LIVES 20
-#define LEVEL_CHANGE_SCORE 100
+#define LEVEL_CHANGE_SCORE 400
 
 static double OBSTACLE_PROBABILITY = 0.02;
 static Vector2 playerPosition = {0};
@@ -42,6 +42,7 @@ static Texture2D button = {0};
 static Camera2D camera = {0};
 Texture2D grassland = {0};
 Texture2D household = {0};
+Texture2D sofaset = {0};
 
 Music oof = {0};
 Music gameOST = {0};
@@ -282,14 +283,22 @@ void InitGameScreen(void) {
 	Image image = LoadImage("resources/char.png");
 	ImageResizeNN(&image, image.width * 4, image.height * 4);
 	player = LoadTextureFromImage(image);
+	UnloadImage(image);
 
 	Image grasslandImage = LoadImage("resources/grassland.png");
 	ImageResizeNN(&grasslandImage, grasslandImage.width * 4, grasslandImage.height * 4);
 	grassland = LoadTextureFromImage(grasslandImage);
+	UnloadImage(grasslandImage);
 
 	Image householdImage = LoadImage("resources/household.png");
 	ImageResizeNN(&householdImage, householdImage.width * 4, householdImage.height * 4);
 	household = LoadTextureFromImage(householdImage);
+	UnloadImage(householdImage);
+
+	Image sofasetImage = LoadImage("resources/sofa_set.png");
+	ImageResizeNN(&sofasetImage, sofasetImage.width * 4, sofasetImage.height * 4);
+	sofaset = LoadTextureFromImage(sofasetImage);
+	UnloadImage(sofasetImage);
 
 	playerSpriteWidth = player.width / 10;
 	playerSpriteHeight = player.height / 20;
@@ -1157,6 +1166,7 @@ void UnloadGameScreen(void) {
 	UnloadTexture(button9);
 	UnloadTexture(button);
 	UnloadTexture(player);
+	UnloadTexture(sofaset);
 	UnloadMusicStream(oof);
 	UnloadMusicStream(gameOST);
 	UnloadMusicStream(click);
@@ -1305,16 +1315,29 @@ void DrawObstaclesHome(void) {
 				int dy = y - vy * 3;
 				assert(dx < 3);
 				assert(dy < 3);
-				int oj = dx;
-				int oi = 18 + dy;
 
-				Rectangle obstacleRect =
-					{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
-				DrawTextureRec(
-					household,
-					obstacleRect,
-					(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
-					WHITE);
+				int choice = rng_u64((uint64_t)vy << 31 | vx) % 5;
+				if (choice < 3) {
+					int oj = choice * 3 + dx;
+					int oi = dy;
+					Rectangle obstacleRect =
+						{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
+					DrawTextureRec(
+						sofaset,
+						obstacleRect,
+						(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+						WHITE);
+				} else {
+					int oj = dx;
+					int oi = 18 + dy;
+					Rectangle obstacleRect =
+						{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
+					DrawTextureRec(
+						household,
+						obstacleRect,
+						(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+						WHITE);
+				}
 			} else {
 				int oi = 23 + obstacleType / 8;
 				int oj = obstacleType % 8;
