@@ -43,9 +43,9 @@ core of the game made for the 3 day game jam Global Gamejam 2024
 - [ ] Transition b/w levels
 - [ ] UI/UX development in screen transition
 - [ ] Enemy random encounter
-- [ ] Generate QnA which are to be shown on encounter with enemy
-- [ ] Search funny SFX
-- [ ] Implement SFX
+- [x] Generate QnA which are to be shown on encounter with enemy
+- [x] Search funny SFX
+- [x] Implement SFX
 - [ ] Get "inpsiration" from Steven He & other Asian Youtubers
 
 > SFX
