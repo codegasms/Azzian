@@ -76,8 +76,8 @@ void InitTitleScreen(void) {
 	ImageResizeNN(&small2, small2.width * 3, small2.height * 3);
 	smallButtonPressed = LoadTextureFromImage(small2);
 
-	Image scroll = LoadImage("resources/scroll_wide.png");
-	ImageResizeNN(&scroll, scroll.width * 0.6, scroll.height * 0.6);
+	Image scroll = LoadImage("resources/scroll.png");
+	ImageResizeNN(&scroll, scroll.width * 18, scroll.height * 25);
 	scrollPaper = LoadTextureFromImage(scroll);
 
 	InitAudioDevice();
@@ -304,7 +304,7 @@ void DrawTitleScreen(void) {
 			"DIFFICULTY",
 			(Vector2){
 				screenWidth / 2 - MeasureText("DIFFICULTY", 50) / 2 + 20,
-				screenHeight / 2 - padding * 4},
+				screenHeight / 2 - padding * 5},
 			50,
 			3,
 			BLACK);
@@ -384,29 +384,29 @@ void DrawTitleScreen(void) {
 			"ASIANS DON'T NEED HELP",
 			(Vector2){
 				screenWidth / 2 - MeasureText("ASIANS DON'T NEED HELP", 50) / 2 + 20,
-				screenHeight / 2 - padding * 3},
+				screenHeight / 2 - padding * 4},
 			50,
 			3,
 			BLACK);
 		if (GuiImageButtonEx(
 				(Rectangle){
 					screenWidth / 2 + bigButton.width / 2,
-					screenHeight / 2 + bigButton.height / 2,
+					screenHeight / 2 + bigButton.height / 4,
 					bigButton.width,
 					bigButton.height},
-				"Ok?",
+				"Sorry",
 				((menuButtonState >> 3) & 1) == 1 ? bigButtonPressed : bigButton,
 				(Rectangle){0, 0, bigButton.width, bigButton.height}) &&
 		    menuType == MENU_HELP) {
-			StopMusicStream(click);
-			PlayMusicStream(click);
+			StopMusicStream(correctBuzzer);
+			PlayMusicStream(correctBuzzer);
 			menuButtonState = 0;
 			menuType = MENU_MAIN;
 		}
 		if (GuiImageButtonEx(
 				(Rectangle){
 					screenWidth / 2 - bigButton.width / 2 * 3,
-					screenHeight / 2 + bigButton.height / 2,
+					screenHeight / 2 + bigButton.height / 4,
 					bigButton.width,
 					bigButton.height},
 				(asianHelp == 1) ? "Yes!!!" : "Really?",
@@ -446,14 +446,14 @@ void DrawTitleScreen(void) {
 			"Are You Sure You Want To Quit?",
 			(Vector2){
 				screenWidth / 2 - MeasureText("Are You Sure You Want To Quit?", 40) / 2 + 20,
-				screenHeight / 2 - padding * 2},
+				screenHeight / 2 - padding * 3},
 			40,
 			3,
 			BLACK);
 		if (GuiImageButtonEx(
 				(Rectangle){
 					screenWidth / 2 + bigButton.width / 2,
-					screenHeight / 2 + bigButton.height / 2,
+					screenHeight / 2 + bigButton.height / 4,
 					bigButton.width,
 					bigButton.height},
 				"Yes",
@@ -466,7 +466,7 @@ void DrawTitleScreen(void) {
 		if (GuiImageButtonEx(
 				(Rectangle){
 					screenWidth / 2 - bigButton.width / 2 * 3,
-					screenHeight / 2 + bigButton.height / 2,
+					screenHeight / 2 + bigButton.height / 4,
 					bigButton.width,
 					bigButton.height},
 				"No",
@@ -500,9 +500,9 @@ void DrawTitleScreen(void) {
 			"WAIT WHAT!? YOU WANT TO CHANGE THE LANGUAGE?",
 			(Vector2){
 				screenWidth / 2 -
-					MeasureText("WAIT WHAT!? YOU WANT TO CHANGE THE LANGUAGE?", 22) / 2 - 10,
+					MeasureText("WAIT WHAT!? YOU WANT TO CHANGE THE LANGUAGE?", 23.5) / 2 - 30,
 				screenHeight / 2 - padding * 3},
-			22,
+			23.5,
 			3,
 			BLACK);
 		DrawTextEx(
@@ -512,7 +512,7 @@ void DrawTitleScreen(void) {
 				screenWidth / 2 -
 					MeasureText("How Would You Get Into Harvard If You Don't Know English?", 20) /
 						2 -
-					20,
+					25,
 				screenHeight / 2 - padding},
 			20,
 			3,
@@ -574,7 +574,7 @@ void DrawTitleScreen(void) {
 			"THE CODEGASMS",
 			(Vector2){
 				screenWidth / 2 - MeasureText("THE CODEGASMS", 35) / 2,
-				screenHeight / 2 - padding * 4},
+				screenHeight / 2 - padding * 5},
 			35.,
 			3,
 			BLACK);
@@ -587,15 +587,15 @@ void DrawTitleScreen(void) {
 			" Vinayak Anand         (github.com/Vinayak-Anand)",
 			(Vector2){
 				screenWidth / 2 -
-					MeasureText("Bishwajeet Sahoo     (github.com/SahooBishwajeet)", 20) / 2,
-				screenHeight / 2 - padding * 2},
+					MeasureText("Bishwajeet Sahoo     (github.com/SahooBishwajeet)", 20) / 2 - 25,
+				screenHeight / 2 - padding * 3},
 			20,
 			3,
 			BLACK);
 		if (GuiImageButtonEx(
 				(Rectangle){
 					screenWidth / 2 + bigButton.width / 2,
-					screenHeight / 2 + bigButton.height,
+					screenHeight / 2 + bigButton.height / 2 + 15,
 					bigButton.width,
 					bigButton.height},
 				"I Don't Give A Duck",
@@ -613,7 +613,7 @@ void DrawTitleScreen(void) {
 		if (GuiImageButtonEx(
 				(Rectangle){
 					screenWidth / 2 - bigButton.width / 2 * 3,
-					screenHeight / 2 + bigButton.height,
+					screenHeight / 2 + bigButton.height / 2 + 15,
 					bigButton.width,
 					bigButton.height},
 				"Appreciated!!!",
