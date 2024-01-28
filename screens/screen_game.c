@@ -354,6 +354,20 @@ void UpdateGameScreen(void) {
 		UpdateTauntScreen();
 	}
 
+	if (score % 100 == 0 && score != 0) {
+		score += 2;
+		gGameLevel = (gGameLevel == 1) ? 2 : 1;
+		IncreaseSpeed();
+	}
+	// Thinking of a way to implement a simple transition between levels
+	// 	if (score % 100 > 95 && score != 0) {
+	// 	// score += 1;
+	// 	gGameLevel = (gGameLevel == 1) ? 2 : 1;
+	// 	if (score % 100 == 0) {
+	// 		IncreaseSpeed();
+	// 	}
+	// }
+
 	if (!randomSpawn) {
 		if (IsKeyPressed(KEY_SPACE)) {
 			paused = !paused;
@@ -576,6 +590,7 @@ void UpdateGameScreen(void) {
 				} else {
 					node = node->next;
 				}
+
 			}
 		}
 	}
