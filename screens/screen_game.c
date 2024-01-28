@@ -9,7 +9,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern int characterIdx;
+extern int tauntIdx;
+
 #define MAX_LIVES 20
+#define LEVEL_CHANGE_SCORE 100
 
 static double OBSTACLE_PROBABILITY = 0.02;
 static Vector2 playerPosition = {0};
@@ -39,6 +43,10 @@ static Camera2D camera = {0};
 Texture2D grassland = {0};
 Texture2D household = {0};
 
+Music oof = {0};
+Music gameOST = {0};
+Music click = {0};
+
 int gGameLevel = 1;
 
 Rectangle frameRec = {0};
@@ -65,6 +73,7 @@ static int score;
 
 static bool paused = false;
 static bool randomSpawn = false;
+static bool randomSelect = false;
 static bool gameOver = false;
 static bool pressed_1;
 static bool pressed_2;
@@ -141,7 +150,7 @@ void InitGameScreen(void) {
 	for (int i = 0; i < MAX_CHAPPAL_TYPES; i++) {
 		Image chap = LoadImage(chappalSources[i]);
 		// TODO: resize chappal assets
-		ImageResizeNN(&chap, chap.width * 0.25f, chap.height * 0.25f);
+		ImageResizeNN(&chap, chap.width * 2, chap.height * 2);
 		chappalTextures[i] = LoadTextureFromImage(chap);
 		UnloadImage(chap);
 	}
@@ -150,6 +159,17 @@ void InitGameScreen(void) {
 	chappalList->head = NULL;
 	// chappal = CreateChappal(chappalTexture, playerPosition);
 	// End Testing
+
+	// Loading Audio
+	InitAudioDevice();
+
+	oof = LoadMusicStream("resources/audio/oof.mp3");
+	oof.looping = false;
+	click = LoadMusicStream("resources/audio/click.mp3");
+	click.looping = false;
+	gameOST = LoadMusicStream("resources/audio/gameOST.mp3");
+	SetMusicVolume(gameOST, 0.2f);
+	PlayMusicStream(gameOST);
 
 	// Loading Textures
 	Image scroll = LoadImage("resources/scroll.png");
@@ -346,16 +366,32 @@ int gRows = 0, gCols = 0;
 int gTerrain[100 * 100];
 int gObstacles[100 * 100];
 
+void healthChangeNPC(int deltaHealth) {
+	lives += deltaHealth;
+	if (lives > MAX_LIVES) {
+		lives = MAX_LIVES;
+	}
+}
+
 void UpdateGameScreen(void) {
-	if (IsKeyPressed(KEY_T)) {
-		randomSpawn = !randomSpawn;
+	UpdateMusicStream(gameOST);
+	UpdateMusicStream(click);
+
+	if (score % (LEVEL_CHANGE_SCORE / 2) == 0 && score != 0) {
+		randomSpawn = true;
+	}
+
+	if (randomSpawn == true && randomSelect == false) {
+		characterIdx = GetRandomValue(0, 6);
+		tauntIdx = GetRandomValue(0, 4);
+		randomSelect = true;
 	}
 
 	if (randomSpawn) {
 		UpdateTauntScreen();
 	}
 
-	if (score % 100 == 0 && score != 0) {
+	if (score % LEVEL_CHANGE_SCORE == 0 && score != 0) {
 		score += 2;
 		gGameLevel = (gGameLevel == 1) ? 2 : 1;
 		IncreaseSpeed();
@@ -401,6 +437,8 @@ void UpdateGameScreen(void) {
 
 				if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
 					pressed_1 = true;
+					StopMusicStream(click);
+					PlayMusicStream(click);
 				}
 			} else {
 				btnState_1 = 0;
@@ -416,15 +454,19 @@ void UpdateGameScreen(void) {
 
 				if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
 					pressed_2 = true;
+					StopMusicStream(click);
+					PlayMusicStream(click);
 				}
 			} else {
 				btnState_2 = 0;
 			}
 
 			if (pressed_1) {
+				StopMusicStream(gameOST);
 				paused = false;
 				pressed_1 = false;
 			} else if (pressed_2) {
+				StopMusicStream(gameOST);
 				finishScreen = 1;
 				paused = false;
 				pressed_2 = false;
@@ -446,18 +488,24 @@ void UpdateGameScreen(void) {
 
 				if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
 					pressed_3 = true;
+					StopMusicStream(click);
+					PlayMusicStream(click);
 				}
 			} else {
 				btnState_3 = 0;
 			}
 
 			if (pressed_3) {
+				StopMusicStream(gameOST);
 				finishScreen = 1;
 				gameOver = false;
 				pressed_3 = false;
 			}
 
 		} else {
+			UpdateMusicStream(oof);
+			UpdateMusicStream(click);
+
 			framesCounter++;
 
 			if (framesCounter >= (60 / framesSpeed)) {
@@ -564,15 +612,18 @@ void UpdateGameScreen(void) {
 					20};
 				if (CheckCollisionRecs(playerRec, chappalRec)) {
 					if (node->chappal->type == KHANA) {
-						lives++;
+						lives += 5;
 						if (lives > MAX_LIVES)
 							lives = MAX_LIVES;
-					} else
+					} else {
+						StopMusicStream(oof);
+						PlayMusicStream(oof);
 						lives--;
+					}
 					Node* temp = node;
 					node = node->next;
 					DeleteChappalNode(temp);
-					if (lives == 0) {
+					if (lives <= 0) {
 						// finishScreen = 1;
 						gameOver = true;
 					}
@@ -1052,7 +1103,11 @@ void DrawGameScreen(void) {
 	EndMode2D();
 
 	if (randomSpawn) {
-		DrawTauntScreen();
+		if (DrawTauntScreen() == true) {
+			score += 1;
+			randomSelect = false;
+		}
+		randomSpawn = !DrawTauntScreen();
 	}
 
 	// Implement Dialog Box
@@ -1092,6 +1147,10 @@ void UnloadGameScreen(void) {
 	UnloadTexture(button9);
 	UnloadTexture(button);
 	UnloadTexture(player);
+	UnloadMusicStream(oof);
+	UnloadMusicStream(gameOST);
+	UnloadMusicStream(click);
+	CloseAudioDevice();
 }
 
 // This function returns whether the game should end or not.

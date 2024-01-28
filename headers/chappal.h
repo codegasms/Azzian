@@ -11,10 +11,10 @@
 
 // TODO: add resource links
 static const char *chappalSources[MAX_CHAPPAL_TYPES] = {
-	"resources/Square Buttons/Colored Square Buttons/Audio col_Square Button.png",
-	"resources/Square Buttons/Colored Square Buttons/Back col_Square Button.png",
-	"resources/Square Buttons/Colored Square Buttons/Down col_Square Button.png",
-	"resources/Square Buttons/Colored Square Buttons/X col_Square Button.png"};
+	"resources/burger.png",
+	"resources/chappal_1.png",
+	"resources/chappal_2.png",
+	"resources/chappal_1.png"};
 
 typedef enum {
 	KHANA = 0,
