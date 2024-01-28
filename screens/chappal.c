@@ -55,7 +55,6 @@ Chappal* CreateChappal(Texture2D textures[], Vector2 target) {
 		chappal->type = JUTA;
 	else
 		chappal->type = CHAPPAL;
-	printf("%d chappal type", chappal->type);
 	chappal->texture = textures[chappal->type];
 	return chappal;
 }
