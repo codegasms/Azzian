@@ -579,159 +579,160 @@ void UpdateGameScreen(void) {
 			}
 		}
 	}
+}
 
-	int CellIdx(int x, int size) {
-		return (x - (x % size + size) % size) / size;
-	}
+int CellIdx(int x, int size) {
+	return (x - (x % size + size) % size) / size;
+}
 
-	/// Generate a random uint64_t based on the given seed using the WyHash algorithm.
-	uint64_t rng_u64(uint64_t seed) {
-		typedef unsigned __int128 u128;
-		seed += (uint64_t)0x60bee2bee120fc15ULL;
-		u128 tmp = (u128)seed * (u128)0xa3b195354a39b70dULL;
-		uint64_t m1 = (uint64_t)(tmp >> 64 ^ tmp);
-		tmp = (u128)m1 * (u128)0x1b03738712fad5c9ULL;
-		uint64_t m2 = (uint64_t)(tmp >> 64 ^ tmp);
-		return m2;
-	}
+/// Generate a random uint64_t based on the given seed using the WyHash algorithm.
+uint64_t rng_u64(uint64_t seed) {
+	typedef unsigned __int128 u128;
+	seed += (uint64_t)0x60bee2bee120fc15ULL;
+	u128 tmp = (u128)seed * (u128)0xa3b195354a39b70dULL;
+	uint64_t m1 = (uint64_t)(tmp >> 64 ^ tmp);
+	tmp = (u128)m1 * (u128)0x1b03738712fad5c9ULL;
+	uint64_t m2 = (uint64_t)(tmp >> 64 ^ tmp);
+	return m2;
+}
 
-	/// Generate a random double in range [0, 1].
-	double rng_f64(uint64_t seed) {
-		static const double uint64_t_max = (double)0xffffffffffffffffULL;
-		const uint64_t gen = rng_u64(seed);
-		return (double)gen / uint64_t_max;
-	}
+/// Generate a random double in range [0, 1].
+double rng_f64(uint64_t seed) {
+	static const double uint64_t_max = (double)0xffffffffffffffffULL;
+	const uint64_t gen = rng_u64(seed);
+	return (double)gen / uint64_t_max;
+}
 
-	int idx(int i, int j, int n) {
-		return i * n + j;
-	}
+int idx(int i, int j, int n) {
+	return i * n + j;
+}
 
-	void SetCellsState(void) {
-		int playerX = CellIdx(playerPosition.x, playerSpriteWidth);
-		int playerY = CellIdx(playerPosition.y, playerSpriteHeight);
+void SetCellsState(void) {
+	int playerX = CellIdx(playerPosition.x, playerSpriteWidth);
+	int playerY = CellIdx(playerPosition.y, playerSpriteHeight);
 
-		int rows = 10 + HEIGHT / playerSpriteHeight;
-		int cols = 10 + WIDTH / playerSpriteWidth;
+	int rows = 10 + HEIGHT / playerSpriteHeight;
+	int cols = 10 + WIDTH / playerSpriteWidth;
 
-		gStartX = playerX - cols / 2;
-		gStartY = playerY - rows / 2;
-		gRows = rows;
-		gCols = cols;
-	}
+	gStartX = playerX - cols / 2;
+	gStartY = playerY - rows / 2;
+	gRows = rows;
+	gCols = cols;
+}
 
-	void UpdateTerrain(void) {
-		int rows = gRows, cols = gCols;
-		int x1 = gStartX, y1 = gStartY;
+void UpdateTerrain(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
 
-		Image noiseImage = GenImagePerlinNoise(cols, rows, x1, y1, 20.0f);
-		Color* colors = LoadImageColors(noiseImage);
-		UnloadImage(noiseImage);
+	Image noiseImage = GenImagePerlinNoise(cols, rows, x1, y1, 20.0f);
+	Color* colors = LoadImageColors(noiseImage);
+	UnloadImage(noiseImage);
 
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < cols; ++j) {
-				Color color = colors[i * cols + j];
-				assert(color.r == color.g && color.r == color.b && color.a == 255);
-				int intensity = color.r;
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			Color color = colors[i * cols + j];
+			assert(color.r == color.g && color.r == color.b && color.a == 255);
+			int intensity = color.r;
 
-				if (intensity < 50) {
-					gTerrain[idx(i, j, cols)] = 0;
-				} else if (intensity < 150) {
-					gTerrain[idx(i, j, cols)] = 1;
-				} else if (intensity < 200) {
-					gTerrain[idx(i, j, cols)] = 2;
-				} else {
-					gTerrain[idx(i, j, cols)] = 3;
-				}
-			}
-		}
-
-		UnloadImageColors(colors);
-	}
-
-	/// Returns a non-negative int on obstacle, and -1 for no obstacle.
-	int ObstacleAt(int x, int y) {
-		uint64_t seed = ((uint64_t)x << 31) * (x ^ ~y);
-
-		if (rng_f64(seed) >= OBSTACLE_PROBABILITY) {
-			return -1;
-		}
-
-		seed = ((uint64_t)~x << 31) * (~x ^ ~y);
-		int obstacleType = (int)rng_u64(seed);
-		return obstacleType;
-	}
-
-	void UpdateObstacles(void) {
-		int rows = gRows, cols = gCols;
-		int x1 = gStartX, y1 = gStartY;
-
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < cols; ++j) {
-				int x = x1 + j;
-				int y = y1 + i;
-
-				int terrainType = gTerrain[idx(i, j, cols)];
-				int obstacleType = ObstacleAt(x, y) % 4;
-
-				if (terrainType == 0 || obstacleType < 0) {
-					gObstacles[idx(i, j, cols)] = -1;
-					continue;
-				}
-
-				assert(terrainType >= 0 && terrainType < 4);
-				gObstacles[idx(i, j, cols)] = obstacleType;
+			if (intensity < 50) {
+				gTerrain[idx(i, j, cols)] = 0;
+			} else if (intensity < 150) {
+				gTerrain[idx(i, j, cols)] = 1;
+			} else if (intensity < 200) {
+				gTerrain[idx(i, j, cols)] = 2;
+			} else {
+				gTerrain[idx(i, j, cols)] = 3;
 			}
 		}
 	}
 
-	void DrawTerrain(void) {
-		int rows = gRows, cols = gCols;
-		int x1 = gStartX, y1 = gStartY;
+	UnloadImageColors(colors);
+}
 
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < cols; ++j) {
-				int y = y1 + i;
-				int x = x1 + j;
-				int si = 0, sj = 0;
+/// Returns a non-negative int on obstacle, and -1 for no obstacle.
+int ObstacleAt(int x, int y) {
+	uint64_t seed = ((uint64_t)x << 31) * (x ^ ~y);
 
-				// clang-format off
+	if (rng_f64(seed) >= OBSTACLE_PROBABILITY) {
+		return -1;
+	}
+
+	seed = ((uint64_t)~x << 31) * (~x ^ ~y);
+	int obstacleType = (int)rng_u64(seed);
+	return obstacleType;
+}
+
+void UpdateObstacles(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int x = x1 + j;
+			int y = y1 + i;
+
+			int terrainType = gTerrain[idx(i, j, cols)];
+			int obstacleType = ObstacleAt(x, y) % 4;
+
+			if (terrainType == 0 || obstacleType < 0) {
+				gObstacles[idx(i, j, cols)] = -1;
+				continue;
+			}
+
+			assert(terrainType >= 0 && terrainType < 4);
+			gObstacles[idx(i, j, cols)] = obstacleType;
+		}
+	}
+}
+
+void DrawTerrain(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int y = y1 + i;
+			int x = x1 + j;
+			int si = 0, sj = 0;
+
+			// clang-format off
 			switch(gTerrain[idx(i, j, cols)]) {
 				case 0: si = 10; sj =  5; break;
 				case 1: si =  6; sj =  2; break;
 				case 2: si =  7; sj =  3; break;
 				case 3: si =  6; sj =  3; break;
 			}
-				// clang-format on
+			// clang-format on
 
-				Rectangle terrainRect =
-					{.x = 16 * 4 * sj, .y = 16 * 4 * si, .width = 16 * 4, .height = 16 * 4};
-				DrawTextureRec(
-					grassland,
-					terrainRect,
-					(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
-					WHITE);
-			}
+			Rectangle terrainRect =
+				{.x = 16 * 4 * sj, .y = 16 * 4 * si, .width = 16 * 4, .height = 16 * 4};
+			DrawTextureRec(
+				grassland,
+				terrainRect,
+				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+				WHITE);
 		}
 	}
+}
 
-	void DrawObstacles(void) {
-		int rows = gRows, cols = gCols;
-		int x1 = gStartX, y1 = gStartY;
+void DrawObstacles(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
 
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < cols; ++j) {
-				int x = x1 + j;
-				int y = y1 + i;
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int x = x1 + j;
+			int y = y1 + i;
 
-				int obstacleType = gObstacles[idx(i, j, cols)];
-				if (obstacleType < 0) {
-					continue;
-				}
+			int obstacleType = gObstacles[idx(i, j, cols)];
+			if (obstacleType < 0) {
+				continue;
+			}
 
-				int terrainType = gTerrain[idx(i, j, cols)];
-				int oi = 0, oj = 0;
+			int terrainType = gTerrain[idx(i, j, cols)];
+			int oi = 0, oj = 0;
 
-				// clang-format off
+			// clang-format off
 			switch (terrainType) {
 				default:
 				case 1: {
@@ -764,357 +765,364 @@ void UpdateGameScreen(void) {
 					break;
 				}
 			}
-				// clang-format on
+			// clang-format on
 
-				Rectangle obstacleRect =
-					{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
-				DrawTextureRec(
-					grassland,
-					obstacleRect,
-					(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
-					WHITE);
-			}
+			Rectangle obstacleRect =
+				{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
+			DrawTextureRec(
+				grassland,
+				obstacleRect,
+				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+				WHITE);
+		}
+	}
+}
+
+void DrawGameScreen(void) {
+	BeginMode2D(camera);
+
+	if (gGameLevel == 1) {
+		DrawTerrain();
+		DrawObstacles();
+	} else {
+		DrawTerrainHome();
+		DrawObstaclesHome();
+	}
+
+	if (face == FACE_LEFT) {
+		DrawTextureRec(
+			player,
+			(Rectangle){frameRec.x, frameRec.y, -frameRec.width, frameRec.height},
+			playerPosition,
+			WHITE);
+	} else if (face != FACE_IDLE) {
+		DrawTextureRec(player, frameRec, playerPosition, WHITE);
+	} else {
+		DrawTextureRec(
+			player,
+			(Rectangle){0.0f, frameRec.y, frameRec.width, frameRec.height},
+			playerPosition,
+			WHITE);
+	}
+	// Draw chappals
+	Node* node = chappalList->head;
+	int counter = 0;
+	while (node != NULL) {
+		DrawChappal(node->chappal);
+		node = node->next;
+		counter++;
+	}
+
+	// _Static_assert(MAX_LIVES % 4 == 0, "MAX_LIVES must be a multiple of 4");
+	const int HEARTS = (MAX_LIVES + 3) / 4;
+	for (int i = 0; i < HEARTS; ++i) {
+		int rem = lives - i * 4;
+		if (rem < 0) {
+			rem = 0;
+		}
+
+		if (rem > 4)
+			rem = 4;
+		DrawTextureRec(
+			heart,
+			(Rectangle){17 * 2 * (4 - rem), 0, 17 * 2, 17 * 2},
+			(Vector2){playerPosition.x - 600 + (17 * 2 * i), playerPosition.y - 300},
+			WHITE);
+	}
+	DrawTexture(scoreBoard, playerPosition.x - 625, playerPosition.y - 255, WHITE);
+	DrawText(
+		TextFormat("Score: %d", score),
+		playerPosition.x - 550,
+		playerPosition.y - 225,
+		20,
+		BLACK);
+	DrawFPS(playerPosition.x - WIDTH / 2.0f + 40, playerPosition.y - HEIGHT / 2.0f + 40);
+
+	if (paused) {
+		// Draw fade background.
+		DrawRectangle(
+			playerPosition.x - (WIDTH / 2.0f) + (playerSpriteWidth / 2.0f),
+			playerPosition.y - (HEIGHT / 2.0f) + (playerSpriteHeight / 2.0f),
+			WIDTH,
+			HEIGHT,
+			ColorAlpha(BLACK, 0.3));
+		// Draw blue board
+		DrawTexture(
+			menuScreen,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2.0f),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2.0f),
+			(Color){175, 175, 175, 225});
+		// Draw game paused text
+		DrawTexture(
+			gamePaused,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (gamePaused.width / 2.0f),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (gamePaused.height / 2.0f) - 200,
+			WHITE);
+
+		if (btnState_1 == 0) {
+			DrawTexture(button1, pauseBtn1Rec.x, pauseBtn1Rec.y, WHITE);
+		} else if (btnState_1 == 1) {
+			DrawTexture(button2, pauseBtn1Rec.x, pauseBtn1Rec.y, WHITE);
+		} else if (btnState_1 == 2) {
+			DrawTexture(button3, pauseBtn1Rec.x, pauseBtn1Rec.y, WHITE);
+		}
+		// DrawRectangleRec(pauseBtn1Rec, RED);
+		if (btnState_2 == 0) {
+			DrawTexture(button4, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
+		} else if (btnState_2 == 1) {
+			DrawTexture(button5, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
+		} else if (btnState_2 == 2) {
+			DrawTexture(button6, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
+		}
+	} else if (gameOver) {
+		// Dim background
+		DrawRectangle(
+			playerPosition.x - (WIDTH / 2.0f) + (playerSpriteWidth / 2.0f),
+			playerPosition.y - (HEIGHT / 2.0f) + (playerSpriteHeight / 2.0f),
+			WIDTH,
+			HEIGHT,
+			ColorAlpha(BLACK, 0.3));
+		// Draw game over board
+		DrawTexture(
+			endScreen,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2),
+			(Color){175, 175, 175, 225});
+		// Draw game over text
+		DrawTexture(
+			gameOverTexture,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (gameOverTexture.width / 2),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (gameOverTexture.height / 2) - 200,
+			WHITE);
+
+		// Draw skill issue text
+		DrawTexture(
+			skillIssue,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (skillIssue.width / 2),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (skillIssue.height / 2) + 45,
+			WHITE);
+
+		// Draw loser text
+		DrawTexture(
+			loser,
+			playerPosition.x + (playerSpriteWidth / 2.0f) - (loser.width / 2),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - (loser.height / 2) - 100,
+			WHITE);
+
+		// Draw score
+		DrawText(
+			TextFormat("%d POINTS", score),
+			playerPosition.x + (playerSpriteWidth / 2.0f) -
+				(MeasureText(TextFormat("%d POINTS", score), 40) / 2.0f),
+			playerPosition.y + (playerSpriteHeight / 2.0f) - 50,
+			40,
+			RED);
+
+		// Draw buttons
+		if (btnState_3 == 0) {
+			DrawTexture(
+				button7,
+				playerPosition.x + (playerSpriteWidth / 2.0f) - (button7.width / 2.0f),
+				playerPosition.y + (playerSpriteHeight / 2.0f) - (button7.height / 2.0f) + 150,
+				WHITE);
+		} else if (btnState_3 == 1) {
+			DrawTexture(
+				button8,
+				playerPosition.x + (playerSpriteWidth / 2.0f) - (button8.width / 2.0f),
+				playerPosition.y + (playerSpriteHeight / 2.0f) - (button8.height / 2.0f) + 150,
+				WHITE);
+		} else if (btnState_3 == 2) {
+			DrawTexture(
+				button9,
+				playerPosition.x + (playerSpriteWidth / 2.0f) - (button9.width / 2.0f),
+				playerPosition.y + (playerSpriteHeight / 2.0f) - (button9.height / 2.0f) + 150,
+				WHITE);
 		}
 	}
 
-	void DrawGameScreen(void) {
-		BeginMode2D(camera);
-
-		if (gGameLevel == 1) {
-			DrawTerrain();
-			DrawObstacles();
-		} else {
-			DrawTerrainHome();
-			DrawObstaclesHome();
-		}
-
-		if (face == FACE_LEFT) {
-			DrawTextureRec(
-				player,
-				(Rectangle){frameRec.x, frameRec.y, -frameRec.width, frameRec.height},
-				playerPosition,
-				WHITE);
-		} else if (face != FACE_IDLE) {
-			DrawTextureRec(player, frameRec, playerPosition, WHITE);
-		} else {
-			DrawTextureRec(
-				player,
-				(Rectangle){0.0f, frameRec.y, frameRec.width, frameRec.height},
-				playerPosition,
-				WHITE);
-		}
-		// Draw chappals
-		Node* node = chappalList->head;
-		int counter = 0;
-		while (node != NULL) {
-			DrawChappal(node->chappal);
-			node = node->next;
-			counter++;
-		}
-
-		// _Static_assert(MAX_LIVES % 4 == 0, "MAX_LIVES must be a multiple of 4");
-		const int HEARTS = (MAX_LIVES + 3) / 4;
-		for (int i = 0; i < HEARTS; ++i) {
-			int rem = lives - i * 4;
-			if (rem < 0) {
-				rem = 0;
-			}
-
-			if (rem > 4)
-				rem = 4;
-			DrawTextureRec(
-				heart,
-				(Rectangle){17 * 2 * (4 - rem), 0, 17 * 2, 17 * 2},
-				(Vector2){playerPosition.x - 600 + (17 * 2 * i), playerPosition.y - 300},
-				WHITE);
-		}
-		DrawTexture(scoreBoard, playerPosition.x - 625, playerPosition.y - 255, WHITE);
+	// Testing
+	if (debug) {
+		DrawRectangleRec(playerRec, RED);
 		DrawText(
-			TextFormat("Score: %d", score),
-			playerPosition.x - 550,
-			playerPosition.y - 225,
+			TextFormat("Lives: %d", lives),
+			playerPosition.x - 600,
+			playerPosition.y,
 			20,
 			BLACK);
-		DrawFPS(playerPosition.x - WIDTH / 2.0f + 40, playerPosition.y - HEIGHT / 2.0f + 40);
+		DrawText(
+			TextFormat("Chappals: %d", counter),
+			playerPosition.x - 600,
+			playerPosition.y + 30,
+			20,
+			BLACK);
+		DrawText(
+			TextFormat("Score: %d", score),
+			playerPosition.x - 600,
+			playerPosition.y + 60,
+			20,
+			BLACK);
+	}
+	// End Testing
 
-		if (paused) {
-			// Draw fade background.
-			DrawRectangle(
-				playerPosition.x - (WIDTH / 2.0f) + (playerSpriteWidth / 2.0f),
-				playerPosition.y - (HEIGHT / 2.0f) + (playerSpriteHeight / 2.0f),
-				WIDTH,
-				HEIGHT,
-				ColorAlpha(BLACK, 0.3));
-			// Draw blue board
-			DrawTexture(
-				menuScreen,
-				playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2.0f),
-				playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2.0f),
-				(Color){175, 175, 175, 225});
-			// Draw game paused text
-			DrawTexture(
-				gamePaused,
-				playerPosition.x + (playerSpriteWidth / 2.0f) - (gamePaused.width / 2.0f),
-				playerPosition.y + (playerSpriteHeight / 2.0f) - (gamePaused.height / 2.0f) - 200,
-				WHITE);
+	EndMode2D();
 
-			if (btnState_1 == 0) {
-				DrawTexture(button1, pauseBtn1Rec.x, pauseBtn1Rec.y, WHITE);
-			} else if (btnState_1 == 1) {
-				DrawTexture(button2, pauseBtn1Rec.x, pauseBtn1Rec.y, WHITE);
-			} else if (btnState_1 == 2) {
-				DrawTexture(button3, pauseBtn1Rec.x, pauseBtn1Rec.y, WHITE);
-			}
-			// DrawRectangleRec(pauseBtn1Rec, RED);
-			if (btnState_2 == 0) {
-				DrawTexture(button4, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
-			} else if (btnState_2 == 1) {
-				DrawTexture(button5, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
-			} else if (btnState_2 == 2) {
-				DrawTexture(button6, pauseBtn2Rec.x, pauseBtn2Rec.y, WHITE);
-			}
-		} else if (gameOver) {
-			// Dim background
-			DrawRectangle(
-				playerPosition.x - (WIDTH / 2.0f) + (playerSpriteWidth / 2.0f),
-				playerPosition.y - (HEIGHT / 2.0f) + (playerSpriteHeight / 2.0f),
-				WIDTH,
-				HEIGHT,
-				ColorAlpha(BLACK, 0.3));
-			// Draw game over board
-			DrawTexture(
-				endScreen,
-				playerPosition.x + (playerSpriteWidth / 2.0f) - (menuScreen.width / 2),
-				playerPosition.y + (playerSpriteHeight / 2.0f) - (menuScreen.height / 2),
-				(Color){175, 175, 175, 225});
-			// Draw game over text
-			DrawTexture(
-				gameOverTexture,
-				playerPosition.x + (playerSpriteWidth / 2.0f) - (gameOverTexture.width / 2),
-				playerPosition.y + (playerSpriteHeight / 2.0f) - (gameOverTexture.height / 2) - 200,
-				WHITE);
-
-			// Draw skill issue text
-			DrawTexture(
-				skillIssue,
-				playerPosition.x + (playerSpriteWidth / 2.0f) - (skillIssue.width / 2),
-				playerPosition.y + (playerSpriteHeight / 2.0f) - (skillIssue.height / 2) + 45,
-				WHITE);
-
-			// Draw loser text
-			DrawTexture(
-				loser,
-				playerPosition.x + (playerSpriteWidth / 2.0f) - (loser.width / 2),
-				playerPosition.y + (playerSpriteHeight / 2.0f) - (loser.height / 2) - 100,
-				WHITE);
-
-			// Draw score
-			DrawText(
-				TextFormat("%d POINTS", score),
-				playerPosition.x + (playerSpriteWidth / 2.0f) -
-					(MeasureText(TextFormat("%d POINTS", score), 40) / 2.0f),
-				playerPosition.y + (playerSpriteHeight / 2.0f) - 50,
-				40,
-				RED);
-
-			// Draw buttons
-			if (btnState_3 == 0) {
-				DrawTexture(
-					button7,
-					playerPosition.x + (playerSpriteWidth / 2.0f) - (button7.width / 2.0f),
-					playerPosition.y + (playerSpriteHeight / 2.0f) - (button7.height / 2.0f) + 150,
-					WHITE);
-			} else if (btnState_3 == 1) {
-				DrawTexture(
-					button8,
-					playerPosition.x + (playerSpriteWidth / 2.0f) - (button8.width / 2.0f),
-					playerPosition.y + (playerSpriteHeight / 2.0f) - (button8.height / 2.0f) + 150,
-					WHITE);
-			} else if (btnState_3 == 2) {
-				DrawTexture(
-					button9,
-					playerPosition.x + (playerSpriteWidth / 2.0f) - (button9.width / 2.0f),
-					playerPosition.y + (playerSpriteHeight / 2.0f) - (button9.height / 2.0f) + 150,
-					WHITE);
-			}
-		}
-
-		// Testing
-		if (debug) {
-			DrawRectangleRec(playerRec, RED);
-			DrawText(
-				TextFormat("Lives: %d", lives),
-				playerPosition.x - 600,
-				playerPosition.y,
-				20,
-				BLACK);
-			DrawText(
-				TextFormat("Chappals: %d", counter),
-				playerPosition.x - 600,
-				playerPosition.y + 30,
-				20,
-				BLACK);
-			DrawText(
-				TextFormat("Score: %d", score),
-				playerPosition.x - 600,
-				playerPosition.y + 60,
-				20,
-				BLACK);
-		}
-		// End Testing
-
-		EndMode2D();
+	if (randomSpawn) {
+		DrawTauntScreen();
 	}
 
-	// Unloads the textures. I mean what else did you expect from the name?
-	void UnloadGameScreen(void) {
-		// Delete chappals
-		// UnloadTexture(chappalTexture);
-		for (int i = 0; i < MAX_CHAPPAL_TYPES; i++) {
-			UnloadTexture(chappalTextures[i]);
-		}
-		Node* node = chappalList->head;
-		while (node != NULL) {
-			Node* temp = node;
-			node = node->next;
-			DeleteChappalNode(temp);
-		}
-		UnloadTexture(heart);
-		UnloadTexture(scoreBoard);
-		UnloadTexture(endScreen);
-		UnloadTexture(gameOverTexture);
-		UnloadTexture(skillIssue);
-		UnloadTexture(loser);
-		UnloadTexture(menuScreen);
-		UnloadTexture(gamePaused);
-		UnloadTexture(background);
-		UnloadTexture(button1);
-		UnloadTexture(button2);
-		UnloadTexture(button3);
-		UnloadTexture(button4);
-		UnloadTexture(button5);
-		UnloadTexture(button6);
-		UnloadTexture(button7);
-		UnloadTexture(button8);
-		UnloadTexture(button9);
-		UnloadTexture(button);
-		UnloadTexture(player);
+	// Implement Dialog Box
+}
+
+// Unloads the textures. I mean what else did you expect from the name?
+void UnloadGameScreen(void) {
+	// Delete chappals
+	// UnloadTexture(chappalTexture);
+	for (int i = 0; i < MAX_CHAPPAL_TYPES; i++) {
+		UnloadTexture(chappalTextures[i]);
 	}
-
-	// This function returns whether the game should end or not.
-	// No logic implemented as of yet.
-	int FinishGameScreen(void) {
-		return finishScreen;
+	Node* node = chappalList->head;
+	while (node != NULL) {
+		Node* temp = node;
+		node = node->next;
+		DeleteChappalNode(temp);
 	}
+	UnloadTexture(scrolls);
+	UnloadTexture(heart);
+	UnloadTexture(scoreBoard);
+	UnloadTexture(endScreen);
+	UnloadTexture(gameOverTexture);
+	UnloadTexture(skillIssue);
+	UnloadTexture(loser);
+	UnloadTexture(menuScreen);
+	UnloadTexture(gamePaused);
+	UnloadTexture(background);
+	UnloadTexture(button1);
+	UnloadTexture(button2);
+	UnloadTexture(button3);
+	UnloadTexture(button4);
+	UnloadTexture(button5);
+	UnloadTexture(button6);
+	UnloadTexture(button7);
+	UnloadTexture(button8);
+	UnloadTexture(button9);
+	UnloadTexture(button);
+	UnloadTexture(player);
+}
 
-	void UpdateTerrainHome(void) {
-		int rows = gRows, cols = gCols;
-		int x1 = gStartX, y1 = gStartY;
+// This function returns whether the game should end or not.
+// No logic implemented as of yet.
+int FinishGameScreen(void) {
+	return finishScreen;
+}
 
-		Image noiseImage = GenImagePerlinNoise(cols, rows, x1, y1, 5.0f);
-		Color* colors = LoadImageColors(noiseImage);
-		UnloadImage(noiseImage);
+void UpdateTerrainHome(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
 
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < cols; ++j) {
-				Color color = colors[i * cols + j];
-				assert(color.r == color.g && color.r == color.b && color.a == 255);
-				int intensity = color.r;
+	Image noiseImage = GenImagePerlinNoise(cols, rows, x1, y1, 5.0f);
+	Color* colors = LoadImageColors(noiseImage);
+	UnloadImage(noiseImage);
 
-				if (intensity < 75) {
-					gTerrain[idx(i, j, cols)] = 0;
-				} else if (intensity < 150) {
-					gTerrain[idx(i, j, cols)] = 2;
-				} else {
-					gTerrain[idx(i, j, cols)] = 1;
-				}
-			}
-		}
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			Color color = colors[i * cols + j];
+			assert(color.r == color.g && color.r == color.b && color.a == 255);
+			int intensity = color.r;
 
-		UnloadImageColors(colors);
-	}
-
-	void UpdateObstaclesHome(void) {
-		int rows = gRows, cols = gCols;
-		int x1 = gStartX, y1 = gStartY;
-
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < cols; ++j) {
-				int x = x1 + j;
-				int y = y1 + i;
-
-				int terrainType = gTerrain[idx(i, j, cols)];
-				int saveProbability = OBSTACLE_PROBABILITY;
-				OBSTACLE_PROBABILITY = 0.06;
-				int obstacleType = ObstacleAt(x, y);
-				OBSTACLE_PROBABILITY = saveProbability;
-
-				if (obstacleType < 0) {
-					gObstacles[idx(i, j, cols)] = -1;
-					continue;
-				}
-
-				assert(terrainType >= 0 && terrainType < 3);
-				gObstacles[idx(i, j, cols)] = obstacleType % 20;
+			if (intensity < 75) {
+				gTerrain[idx(i, j, cols)] = 0;
+			} else if (intensity < 150) {
+				gTerrain[idx(i, j, cols)] = 2;
+			} else {
+				gTerrain[idx(i, j, cols)] = 1;
 			}
 		}
 	}
 
-	void DrawTerrainHome(void) {
-		int rows = gRows, cols = gCols;
-		int x1 = gStartX, y1 = gStartY;
+	UnloadImageColors(colors);
+}
 
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < cols; ++j) {
-				int y = y1 + i;
-				int x = x1 + j;
-				int si = 0, sj = 0;
+void UpdateObstaclesHome(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
 
-				// clang-format off
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int x = x1 + j;
+			int y = y1 + i;
+
+			int terrainType = gTerrain[idx(i, j, cols)];
+			int saveProbability = OBSTACLE_PROBABILITY;
+			OBSTACLE_PROBABILITY = 0.06;
+			int obstacleType = ObstacleAt(x, y);
+			OBSTACLE_PROBABILITY = saveProbability;
+
+			if (obstacleType < 0) {
+				gObstacles[idx(i, j, cols)] = -1;
+				continue;
+			}
+
+			assert(terrainType >= 0 && terrainType < 3);
+			gObstacles[idx(i, j, cols)] = obstacleType % 20;
+		}
+	}
+}
+
+void DrawTerrainHome(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int y = y1 + i;
+			int x = x1 + j;
+			int si = 0, sj = 0;
+
+			// clang-format off
 			switch(gTerrain[idx(i, j, cols)]) {
 				default:
 				case 0: si =  1; sj =  1; break;
 				case 1: si =  7; sj =  1; break;
 				case 2: si = 13; sj =  1; break;
 			}
-				// clang-format on
+			// clang-format on
 
-				Rectangle terrainRect =
-					{.x = 16 * 4 * sj, .y = 16 * 4 * si, .width = 16 * 4, .height = 16 * 4};
-				DrawTextureRec(
-					household,
-					terrainRect,
-					(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
-					WHITE);
-			}
+			Rectangle terrainRect =
+				{.x = 16 * 4 * sj, .y = 16 * 4 * si, .width = 16 * 4, .height = 16 * 4};
+			DrawTextureRec(
+				household,
+				terrainRect,
+				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+				WHITE);
 		}
 	}
+}
 
-	void DrawObstaclesHome(void) {
-		int rows = gRows, cols = gCols;
-		int x1 = gStartX, y1 = gStartY;
+void DrawObstaclesHome(void) {
+	int rows = gRows, cols = gCols;
+	int x1 = gStartX, y1 = gStartY;
 
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < cols; ++j) {
-				int x = x1 + j;
-				int y = y1 + i;
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int x = x1 + j;
+			int y = y1 + i;
 
-				int obstacleType = gObstacles[idx(i, j, cols)];
-				if (obstacleType < 0) {
-					continue;
-				}
-
-				// int terrainType = gTerrain[idx(i, j, cols)];
-				int oi = 23 + obstacleType / 8;
-				int oj = obstacleType % 8;
-
-				Rectangle obstacleRect =
-					{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
-				DrawTextureRec(
-					household,
-					obstacleRect,
-					(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
-					WHITE);
+			int obstacleType = gObstacles[idx(i, j, cols)];
+			if (obstacleType < 0) {
+				continue;
 			}
+
+			// int terrainType = gTerrain[idx(i, j, cols)];
+			int oi = 23 + obstacleType / 8;
+			int oj = obstacleType % 8;
+
+			Rectangle obstacleRect =
+				{.x = 16 * 4 * oj, .y = 16 * 4 * oi, .width = 16 * 4, .height = 16 * 4};
+			DrawTextureRec(
+				household,
+				obstacleRect,
+				(Vector2){x * playerSpriteWidth, y * playerSpriteHeight},
+				WHITE);
 		}
 	}
+}
