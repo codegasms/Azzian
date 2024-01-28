@@ -14,6 +14,9 @@ int tauntCharacterHeight = 0;
 int characterIdx = 0;
 int tauntIdx = 0;
 
+int counter = 0;
+bool toogle = false;
+
 const static char *taunts[7][5] = {
 	{											  "Old Man: You must be\n\na speed reader with all\n\nthose text messages and tweets.\n\nBack "
                                               "in my time, we\n\nhad to read entire books.","Old Man: Back in my\n\nday, we didn't have fancy\n\ngadgets. We had to calculate\n\nthe tip "
@@ -119,12 +122,12 @@ bool DrawTauntScreen(void) {
 		(Vector2){screenWidth / 4 + 50, screenHeight / 4 - 30 * CHARACTER_SCALE + 30},
 		WHITE);
 
-	const char *currTaunt =
-		"I heard Google is jealous of your \n\nsearch history. They never thought \n\n"
-		"someone could get so many answers \n\nwrong.";
+	// const char *currTaunt =
+	// 	"I heard Google is jealous of your \n\nsearch history. They never thought \n\n"
+	// 	"someone could get so many answers \n\nwrong.";
 
 	DrawText(
-		taunts[characterIdx][tauntIdx],
+		TextSubtext((taunts[characterIdx][tauntIdx]), 0, counter),
 		screenWidth / 4 + 90,
 		screenHeight / 2 - 65,
 		23,
@@ -144,6 +147,7 @@ bool DrawTauntScreen(void) {
 			WHITE)) {
 		// printf("%d\n", deltaHealth(characterIdx, 1));
 		healthChangeNPC(deltaHealth(characterIdx, 1));
+		counter = 0;
 		return true;
 	}
 
@@ -159,8 +163,14 @@ bool DrawTauntScreen(void) {
 			WHITE)) {
 		// printf("%d\n", deltaHealth(characterIdx, 2));
 		healthChangeNPC(deltaHealth(characterIdx, 2));
+		counter = 0;
 		return true;
 	}
+
+	if (toogle)
+		counter++;
+
+	toogle = !toogle;
 
 	return false;
 };
@@ -192,7 +202,7 @@ int deltaHealth(int characterIdx, int responseType) {
 		}
 	}
 
-	printf("%d\n", deltaHealth);
+	// printf("%d\n", deltaHealth);
 	return deltaHealth;
 }
 

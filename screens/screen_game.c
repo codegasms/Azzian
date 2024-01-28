@@ -13,7 +13,8 @@ extern int characterIdx;
 extern int tauntIdx;
 
 #define MAX_LIVES 20
-#define LEVEL_CHANGE_SCORE 400
+#define LEVEL_CHANGE_SCORE 40
+#define INNER_VOICE_DURATION 500
 
 static double OBSTACLE_PROBABILITY = 0.02;
 static Vector2 playerPosition = {0};
@@ -1181,7 +1182,7 @@ void DrawGameScreen(void) {
 
 	EndMode2D();
 
-	if (innerCounter >= 500) {
+	if (innerCounter >= INNER_VOICE_DURATION) {
 		innerCounter = 0;
 		innerThoughtIdx = GetRandomValue(0, 38);
 	}
@@ -1202,7 +1203,7 @@ void DrawGameScreen(void) {
 			WHITE);
 
 		DrawText(
-			innerVoiceUC[innerThoughtIdx],
+			TextSubtext(innerVoiceUC[innerThoughtIdx], 0, innerCounter),
 			GetScreenWidth() - scrolls.width + 100,
 			GetRenderHeight() - scrolls.height + 35,
 			17,
