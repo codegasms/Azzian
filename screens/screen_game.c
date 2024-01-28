@@ -46,6 +46,7 @@ Texture2D household = {0};
 Music oof = {0};
 Music gameOST = {0};
 Music click = {0};
+Music yom = {0};
 
 int gGameLevel = 1;
 
@@ -168,6 +169,9 @@ void InitGameScreen(void) {
 	click = LoadMusicStream("resources/audio/click.mp3");
 	click.looping = false;
 	gameOST = LoadMusicStream("resources/audio/gameOST.mp3");
+	yom = LoadMusicStream("resources/audio/yom.mp3");
+	SetMusicVolume(yom, 0.2f);
+	yom.looping = false;
 	SetMusicVolume(gameOST, 0.2f);
 	PlayMusicStream(gameOST);
 
@@ -376,12 +380,16 @@ void healthChangeNPC(int deltaHealth) {
 void UpdateGameScreen(void) {
 	UpdateMusicStream(gameOST);
 	UpdateMusicStream(click);
+	UpdateMusicStream(yom);
 
 	if (score % (LEVEL_CHANGE_SCORE / 2) == 0 && score != 0) {
 		randomSpawn = true;
 	}
 
 	if (randomSpawn == true && randomSelect == false) {
+		PauseMusicStream(gameOST);
+		StopMusicStream(yom);
+		PlayMusicStream(yom);
 		characterIdx = GetRandomValue(0, 6);
 		tauntIdx = GetRandomValue(0, 4);
 		randomSelect = true;
@@ -1106,6 +1114,8 @@ void DrawGameScreen(void) {
 		if (DrawTauntScreen() == true) {
 			score += 1;
 			randomSelect = false;
+			StopMusicStream(yom);
+			ResumeMusicStream(gameOST);
 		}
 		randomSpawn = !DrawTauntScreen();
 	}
@@ -1150,6 +1160,7 @@ void UnloadGameScreen(void) {
 	UnloadMusicStream(oof);
 	UnloadMusicStream(gameOST);
 	UnloadMusicStream(click);
+	UnloadMusicStream(yom);
 	CloseAudioDevice();
 }
 
