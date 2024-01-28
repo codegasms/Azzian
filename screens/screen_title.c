@@ -51,7 +51,6 @@ int frameCounter = 0;
 static int asianHelp = 0;
 
 void InitTitleScreen(void) {
-
 	finishScreen = 0;
 
 	GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, 0x1f3b4dff);
@@ -62,24 +61,32 @@ void InitTitleScreen(void) {
 	Image game = LoadImage("resources/azzian.png");
 	ImageResizeNN(&game, game.width * 1.2, game.height * 1.2);
 	gameName = LoadTextureFromImage(game);
+	UnloadImage(game);
 
 	Image big = LoadImage("resources/Sprites/UI_Flat_Button_Medium_Press_02a1.png");
 	ImageResizeNN(&big, big.width * 3, big.height * 3);
 	bigButton = LoadTextureFromImage(big);
+	UnloadImage(big);
+
 	Image big2 = LoadImage("resources/Sprites/UI_Flat_Button_Medium_Press_02a2.png");
 	ImageResizeNN(&big2, big2.width * 3, big2.height * 3);
 	bigButtonPressed = LoadTextureFromImage(big2);
+	UnloadImage(big2);
 
 	Image small = LoadImage("resources/Sprites/UI_Flat_Button_Small_Lock_02a1.png");
 	ImageResizeNN(&small, small.width * 3, small.height * 3);
 	smallButton = LoadTextureFromImage(small);
+	UnloadImage(small);
+
 	Image small2 = LoadImage("resources/Sprites/UI_Flat_Button_Small_Lock_02a2.png");
 	ImageResizeNN(&small2, small2.width * 3, small2.height * 3);
 	smallButtonPressed = LoadTextureFromImage(small2);
+	UnloadImage(small2);
 
 	Image scroll = LoadImage("resources/scroll.png");
 	ImageResizeNN(&scroll, scroll.width * 18, scroll.height * 25);
 	scrollPaper = LoadTextureFromImage(scroll);
+	UnloadImage(scroll);
 
 	Image logoImage = LoadImage("resources/sponsors/sponsors_merged.png");
 	ImageResizeNN(&logoImage, logoImage.width / 6, logoImage.height / 6);
@@ -108,13 +115,6 @@ void InitTitleScreen(void) {
 	titleOST = LoadMusicStream("resources/audio/titleOST.mp3");
 
 	PlayMusicStream(titleOST);
-
-	UnloadImage(game);
-	UnloadImage(big);
-	UnloadImage(big2);
-	UnloadImage(small);
-	UnloadImage(small2);
-	UnloadImage(scroll);
 }
 
 void UpdateTitleScreen(void) {
@@ -642,6 +642,8 @@ void DrawTitleScreen(void) {
 };
 
 void UnloadTitleScreen(void) {
+	UnloadImage(menuBg);
+
 	UnloadTexture(menuScreen);
 	UnloadTexture(gameName);
 	UnloadTexture(bigButton);
