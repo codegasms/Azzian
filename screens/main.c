@@ -1,7 +1,6 @@
 #include "screens.h"
 #include <raylib.h>
 #include <raymath.h>
-#include <stdio.h>
 
 GameScreen currentScreen = TITLE;
 

@@ -2,7 +2,6 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <rlgl.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 // Creates a new chappal at a random location with a random rotation speed.
