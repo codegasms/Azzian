@@ -16,7 +16,9 @@ If you would like to revert back the embedding of assets then either restore to 
 
 ### Building and execution
 ```shell
-$ make
+$ make # Debug build
+$ ./Azzian
+$ make release # Release build
 $ ./Azzian
 ```
 

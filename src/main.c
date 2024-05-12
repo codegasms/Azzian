@@ -8,8 +8,12 @@ void UpdateDrawFrame(void);
 
 static bool quitGame = false;
 
-int main() {
-	InitWindow(1280, 720, "Test Game");
+int main(void) {
+#ifdef NDEBUG
+	SetTraceLogLevel(LOG_NONE);
+#endif
+
+	InitWindow(1280, 720, "Azzian - DEBUG");
 
 	// Change it later to Title screen. Player should not go directly to the game screen.
 	switch (currentScreen) {
