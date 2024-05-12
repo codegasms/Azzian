@@ -15,7 +15,7 @@ OBJS := $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(SRCS))
 TARGET := Azzian
 
 # Compiler flags
-CFLAGS := -Wall -Wextra -ggdb -std=c99 -Iinclude
+CFLAGS := -Wall -Wextra -ggdb -std=c99 -Iinclude -Ilib
 
 # Linker flags
 LDFLAGS := -lraylib -lm
