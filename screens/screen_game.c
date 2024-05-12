@@ -395,7 +395,7 @@ void InitGameScreen(void) {
 
 	// Initializing the camera
 	camera.zoom = 1.0f;
-};
+}
 
 Node* createNode(Chappal* chappal) {
 	Node* node = (Node*)malloc(sizeof(Node));
@@ -444,7 +444,7 @@ int gRows = 0, gCols = 0;
 int gTerrain[100 * 100];
 int gObstacles[100 * 100];
 
-void healthChangeNPC(int deltaHealth) {
+void HealthChangeNPC(int deltaHealth) {
 	lives += deltaHealth;
 	if (lives > MAX_LIVES) {
 		lives = MAX_LIVES;

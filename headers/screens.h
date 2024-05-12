@@ -39,7 +39,7 @@ bool DrawTauntScreen(void);
 void UnloadTauntScreen(void);
 int FinishTauntScreen(void);
 
-void healthChangeNPC(int deltaHealth);
+void HealthChangeNPC(int deltaHealth);
 
 bool GuiImageButtonEx(Rectangle bounds, const char *text, Texture2D texture, Rectangle texSource);
 bool GuiImageButtonExTint(
