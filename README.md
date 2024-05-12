@@ -26,6 +26,11 @@ $ ./Azzian
 - [`raylib`](https://www.raylib.com/#supported-platforms)
 - `libc`
 
+## Roadmap
+
+<details>
+<summary>Click me</summary>
+
 ### TODO 2024-01-26 - DONE
 - [x] Create a Title Screen
 - [x] Spawn chappal
@@ -36,12 +41,12 @@ $ ./Azzian
 - [x] Implement collision
 - [x] Implement chappal rain
 - [ ] Design levels {Garden, School, Home} -> Only change the textures and tiles.
-- [ ] Enemy random encounter
+- [x] Enemy random encounter
 - [x] Complete Title Screen
 - [x] Implement Pause menu & score
 - [x] Menu to Game transition
 - [x] Implement hearts
-- [ ] Implement SFX
+- [x] Implement SFX
 - [ ] ~Implement Parry (maybe?)~
 
 #### Design
@@ -66,3 +71,5 @@ $ ./Azzian
 - [x] Add quack on credits "I don't give a duck".
 - [x] Play HAIYAAAA (Uncle Roger) on language button.
 - [x] Play roblox death sound on Damage
+
+</details>
