@@ -2,7 +2,7 @@
 CC := gcc
 
 # Directories
-SRC_DIR := screens
+SRC_DIR := src
 BIN_DIR := bin
 
 # Source files
@@ -15,7 +15,7 @@ OBJS := $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(SRCS))
 TARGET := Azzian
 
 # Compiler flags
-CFLAGS := -Wall -Wextra -ggdb -std=c99 -Iheaders/
+CFLAGS := -Wall -Wextra -ggdb -std=c99 -Iinclude
 
 # Linker flags
 LDFLAGS := -lraylib -lm
@@ -30,7 +30,7 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 fmt:
-	clang-format -i screens/*.c headers/*.h
+	clang-format -i src/*.c include/*.h
 
 clean:
 	$(RM) -r -- $(BIN_DIR)/*.o $(TARGET)

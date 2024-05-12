@@ -9,7 +9,7 @@ A funny pixel game about an Asian boy who is chased around by slippers and const
 This step is optional and it is only recommended if you want to be able to execute the application from any working directory without relying on any external asset files.
 
 ```shell
-$ python embed_assets.py screens/*.c
+$ python embed_assets.py src/*.c
 ```
 
 If you would like to revert back the embedding of assets then either restore to the latest commit or clone the repo again.
