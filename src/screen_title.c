@@ -506,7 +506,7 @@ void DrawTitleScreen(void) {
 			"WAIT WHAT!? YOU WANT TO CHANGE THE LANGUAGE?",
 			(Vector2){
 				screenWidth / 2 -
-					MeasureText("WAIT WHAT!? YOU WANT TO CHANGE THE LANGUAGE?", 23.5) / 2 - 30,
+					MeasureText("WAIT WHAT!? YOU WANT TO CHANGE THE LANGUAGE?", 23) / 2 - 30,
 				screenHeight / 2 - padding * 3},
 			23.5,
 			3,
