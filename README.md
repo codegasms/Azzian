@@ -15,6 +15,7 @@ $ python embed_assets.py src/*.c
 If you would like to revert back the embedding of assets then either restore to the latest commit or clone the repo again.
 
 ### Building and execution
+
 ```shell
 $ make BUILD_MODE=release  # Debug build
 $ ./Azzian
@@ -22,7 +23,16 @@ $ ./Azzian
 $ make BUILD_MODE=release  # Release build
 $ ./Azzian
 
+$ make clean  # Clean up build artifacts
+```
+
+### Building and execution (Web)
+
+The following requires a `libraylib.a` library file compiled for WASM. Follow the instructions at <https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)#21-command-line-compilation> to get it. Then place the file in `./lib`.
+
+```
 $ make PLATFORM=PLATFORM_WEB BUILD_MODE=release web  # WASM build
+
 $ python -m http.server 6969  # Run some HTTP server to serve the Azzian.html file
 $ # Now visit http://0.0.0.0:6969/Azzian.html in your web browser
 
