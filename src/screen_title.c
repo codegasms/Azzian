@@ -93,8 +93,6 @@ void InitTitleScreen(void) {
 	logos = LoadTextureFromImage(logoImage);
 	UnloadImage(logoImage);
 
-	InitAudioDevice();
-
 	quack = LoadMusicStream("resources/audio/quack.mp3");
 	quack.looping = false;
 	haiya = LoadMusicStream("resources/audio/haiya.mp3");
@@ -661,7 +659,6 @@ void UnloadTitleScreen(void) {
 	UnloadMusicStream(wrongBuzzer);
 	UnloadMusicStream(correctBuzzer);
 	UnloadMusicStream(click);
-	CloseAudioDevice();
 };
 
 int FinishTitleScreen(void) {

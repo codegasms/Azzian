@@ -221,9 +221,6 @@ void InitGameScreen(void) {
 	chappalList = (ChappalList*)malloc(sizeof(ChappalList));
 	chappalList->head = NULL;
 
-	// Loading audio
-	InitAudioDevice();
-
 	oof = LoadMusicStream("resources/audio/oof.mp3");
 	oof.looping = false;
 	click = LoadMusicStream("resources/audio/click.mp3");
@@ -1263,8 +1260,6 @@ void UnloadGameScreen(void) {
 	UnloadMusicStream(gameOST);
 	UnloadMusicStream(click);
 	UnloadMusicStream(yom);
-
-	CloseAudioDevice();
 }
 
 // This function returns whether the game should end or not.
